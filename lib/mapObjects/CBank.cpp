@@ -100,7 +100,6 @@ void CBank::onHeroVisit (const CGHeroInstance * h) const
 	if (bc)
 	{
 		int banktext = 0;
-		ui16 soundID = soundBase::ROGUE;
 		switch (ID)
 		{
 		case Obj::CREATURE_BANK:
@@ -119,13 +118,11 @@ void CBank::onHeroVisit (const CGHeroInstance * h) const
 			banktext = 122;
 			break;
 		case Obj::PYRAMID:
-			soundID = soundBase::MYSTERY;
 			banktext = 105;
 			break;
 		}
 		BlockingDialog bd (true, false);
 		bd.player = h->getOwner();
-		bd.soundID = soundID;
 		bd.text.addTxt(MetaString::ADVOB_TXT, banktext);
 		if (ID == Obj::CREATURE_BANK)
 			bd.text.addReplacement(getObjectName());
@@ -134,7 +131,6 @@ void CBank::onHeroVisit (const CGHeroInstance * h) const
 	else
 	{
 		InfoWindow iw;
-		iw.soundID = soundBase::GRAVEYARD;
 		iw.player = h->getOwner();
 		if (ID == Obj::PYRAMID) // You come upon the pyramid ... pyramid is completely empty.
 		{
