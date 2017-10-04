@@ -52,7 +52,7 @@ std::pair< std::vector<BattleHex>, int > BattleInfo::getPath(BattleHex start, Ba
 ui32 BattleInfo::calculateDmg(const CStack * attacker, const CStack * defender,
 	bool shooting, ui8 charge, bool lucky, bool unlucky, bool deathBlow, bool ballistaDoubleDmg, CRandomGenerator & rand)
 {
-	BattleAttackInfo bai(attacker->stackState, defender->stackState, shooting);
+	BattleAttackInfo bai(attacker, defender, shooting);
 	bai.chargedFields = charge;
 	bai.luckyHit = lucky;
 	bai.unluckyHit = unlucky;
@@ -823,6 +823,86 @@ void BattleInfo::updateUnit(const CStackStateInfo & changes)
 	}
 }
 
+void BattleInfo::addUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	CStack * sta = getStack(id, false);
+
+	if(!sta)
+	{
+		logGlobal->error("Cannot find stack %d", id);
+		return;
+	}
+
+	for(const Bonus & b : bonus)
+		addOrUpdateUnitBonus(sta, b, true);
+}
+
+void BattleInfo::updateUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	CStack * sta = getStack(id, false);
+
+	if(!sta)
+	{
+		logGlobal->error("Cannot find stack %d", id);
+		return;
+	}
+
+	for(const Bonus & b : bonus)
+		addOrUpdateUnitBonus(sta, b, false);
+}
+
+void BattleInfo::removeUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	CStack * sta = getStack(id, false);
+
+	if(!sta)
+	{
+		logGlobal->error("Cannot find stack %d", id);
+		return;
+	}
+
+	for(const Bonus & one : bonus)
+	{
+		auto selector = [one](const Bonus * b)
+		{
+			//compare everything but turnsRemain, limiter and propagator
+			return one.duration == b->duration
+			&& one.type == b->type
+			&& one.subtype == b->subtype
+			&& one.source == b->source
+			&& one.val == b->val
+			&& one.sid == b->sid
+			&& one.valType == b->valType
+			&& one.additionalInfo == b->additionalInfo
+			&& one.effectRange == b->effectRange
+			&& one.description == b->description;
+		};
+		sta->popBonuses(selector);
+	}
+}
+
+void BattleInfo::addOrUpdateUnitBonus(CStack * sta, const Bonus & value, bool forceAdd)
+{
+	if(forceAdd || !sta->hasBonus(Selector::source(Bonus::SPELL_EFFECT, value.sid).And(Selector::typeSubtype(value.type, value.subtype))))
+	{
+		//no such effect or cumulative - add new
+		logBonus->trace("%s receives a new bonus: %s", sta->nodeName(), value.Description());
+		sta->addNewBonus(std::make_shared<Bonus>(value));
+	}
+	else
+	{
+		logBonus->trace("%s updated bonus: %s", sta->nodeName(), value.Description());
+
+		for(auto stackBonus : sta->getExportedBonusList()) //TODO: optimize
+		{
+			if(stackBonus->source == value.source && stackBonus->sid == value.sid && stackBonus->type == value.type && stackBonus->subtype == value.subtype)
+			{
+				stackBonus->turnsRemain = std::max(stackBonus->turnsRemain, value.turnsRemain);
+			}
+		}
+		CBonusSystemNode::treeHasChanged();
+	}
+}
 
 CArmedInstance * BattleInfo::battleGetArmyObject(ui8 side) const
 {

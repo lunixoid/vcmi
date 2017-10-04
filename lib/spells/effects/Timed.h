@@ -13,6 +13,7 @@
 #include "StackEffect.h"
 
 struct Bonus;
+struct SetStackEffect;
 
 namespace spells
 {
@@ -35,9 +36,8 @@ protected:
 	void serializeJsonEffect(JsonSerializeFormat & handler) override final;
 
 private:
-
-
 	void convertBonus(const Mechanics * m, int32_t & duration, std::vector<Bonus> & converted) const;
+	void prepareEffects(SetStackEffect & sse, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const;
 };
 
 } // namespace effects

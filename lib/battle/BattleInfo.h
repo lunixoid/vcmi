@@ -92,6 +92,12 @@ public:
 
 	void updateUnit(const CStackStateInfo & changes) override;
 
+	void addUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
+	void updateUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
+	void removeUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
+
+	void addOrUpdateUnitBonus(CStack * sta, const Bonus & value, bool forceAdd);
+
 	//////////////////////////////////////////////////////////////////////////
 	CStack * getStack(int stackID, bool onlyAlive = true);
 	using CBattleInfoEssentials::battleGetArmyObject;

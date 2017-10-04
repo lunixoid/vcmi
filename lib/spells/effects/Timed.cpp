@@ -14,6 +14,7 @@
 #include "../ISpellMechanics.h"
 
 #include "../../NetPacks.h"
+#include "../../battle/IBattleState.h"
 #include "../../CStack.h"
 #include "../../serializer/JsonSerializeFormat.h"
 
@@ -69,7 +70,30 @@ void Timed::convertBonus(const Mechanics * m, int32_t & duration, std::vector<Bo
 void Timed::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
 {
 	SetStackEffect sse;
-	//get default spell duration (spell power with bonuses for heroes)
+	prepareEffects(sse, m, p, target);
+
+	if(!(sse.toAdd.empty() && sse.toUpdate.empty()))
+		server->sendAndApply(&sse);
+}
+
+void Timed::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+{
+	SetStackEffect sse;
+	prepareEffects(sse, m, p, target);
+
+	for(const auto & stackData : sse.toRemove)
+		battleState->removeUnitBonus(stackData.first, stackData.second);
+
+	for(const auto & stackData : sse.toUpdate)
+		battleState->updateUnitBonus(stackData.first, stackData.second);
+
+	for(const auto & stackData : sse.toAdd)
+		battleState->addUnitBonus(stackData.first, stackData.second);
+}
+
+void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+{
+//get default spell duration (spell power with bonuses for heroes)
 	si32 duration = p.effectDuration;
 
 	std::vector<Bonus> converted;
@@ -89,7 +113,7 @@ void Timed::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 		const IStackState * affected = t.stackValue;
 		if(!affected)
 		{
-			server->complain("[Internal error] Invalid target for timed effect");
+			logGlobal->error("[Internal error] Invalid target for timed effect");
 			continue;
 		}
 
@@ -151,14 +175,6 @@ void Timed::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 		else
 			sse.toUpdate.push_back(std::make_pair(affected->unitId(), buffer));
 	}
-
-	if(!(sse.toAdd.empty() && sse.toUpdate.empty()))
-		server->sendAndApply(&sse);
-}
-
-void Timed::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
-{
-
 }
 
 

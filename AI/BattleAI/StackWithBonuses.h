@@ -21,6 +21,7 @@ public:
 
 	std::vector<Bonus> bonusesToAdd;
 	std::vector<Bonus> bonusesToUpdate;
+	std::set<std::shared_ptr<Bonus>> bonusesToRemove;
 
 	StackWithBonuses(const CStackState * Stack);
 
@@ -30,8 +31,13 @@ public:
 
 	const IBonusBearer * unitAsBearer() const override;
 	bool unitHasAmmoCart() const override;
-};
 
+	void addUnitBonus(const std::vector<Bonus> & bonus);
+	void updateUnitBonus(const std::vector<Bonus> & bonus);
+	void removeUnitBonus(const std::vector<Bonus> & bonus);
+private:
+	const IBonusBearer * origBearer;
+};
 
 class HypotheticBattle : public BattleProxy
 {
@@ -45,4 +51,8 @@ public:
 	battle::Units getUnitsIf(battle::UnitFilter predicate) const override;
 
 	void updateUnit(const CStackStateInfo & changes) override;
+
+	void addUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
+	void updateUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
+	void removeUnitBonus(uint32_t id, const std::vector<Bonus> & bonus) override;
 };

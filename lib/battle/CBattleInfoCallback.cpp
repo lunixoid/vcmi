@@ -812,7 +812,7 @@ TDmgRange CBattleInfoCallback::battleEstimateDamage(const CStack * attacker, con
 {
 	RETURN_IF_NOT_BATTLE(std::make_pair(0, 0));
 	const bool shooting = battleCanShoot(attacker, defender->getPosition());
-	const BattleAttackInfo bai(attacker->stackState, defender->stackState, shooting);
+	const BattleAttackInfo bai(attacker, defender, shooting);
 	return battleEstimateDamage(bai, retaliationDmg);
 }
 

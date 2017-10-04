@@ -24,7 +24,8 @@ void actualizeEffect(TBonusListPtr target, const Bonus & ef)
 }
 
 StackWithBonuses::StackWithBonuses(const CStackState * Stack)
-	: state(Stack->getUnitInfo(), this)
+	: state(Stack->getUnitInfo(), this),
+	origBearer(Stack->unitAsBearer())
 {
 	state = *Stack;
 }
@@ -33,8 +34,13 @@ const TBonusListPtr StackWithBonuses::getAllBonuses(const CSelector & selector, 
 	const CBonusSystemNode * root, const std::string & cachingStr) const
 {
 	TBonusListPtr ret = std::make_shared<BonusList>();
-	const TBonusListPtr originalList = state.unitAsBearer()->getAllBonuses(selector, limit, root, cachingStr);
-	range::copy(*originalList, std::back_inserter(*ret));
+	const TBonusListPtr originalList = origBearer->getAllBonuses(selector, limit, root, cachingStr);
+
+	vstd::copy_if(*originalList, std::back_inserter(*ret), [this](const std::shared_ptr<Bonus> & b)
+	{
+		return !vstd::contains(bonusesToRemove, b);
+	});
+
 
 	for(const Bonus & bonus : bonusesToUpdate)
 	{
@@ -73,6 +79,46 @@ bool StackWithBonuses::unitHasAmmoCart() const
 	return false;
 }
 
+void StackWithBonuses::addUnitBonus(const std::vector<Bonus> & bonus)
+{
+	vstd::concatenate(bonusesToAdd, bonus);
+}
+
+void StackWithBonuses::updateUnitBonus(const std::vector<Bonus> & bonus)
+{
+	//TODO: optimize, actualize to last value
+
+	vstd::concatenate(bonusesToUpdate, bonus);
+}
+
+void StackWithBonuses::removeUnitBonus(const std::vector<Bonus> & bonus)
+{
+	for(const Bonus & one : bonus)
+	{
+		auto selector = [&one](const Bonus * b) -> bool
+		{
+			//compare everything but turnsRemain, limiter and propagator
+			return one.duration == b->duration
+			&& one.type == b->type
+			&& one.subtype == b->subtype
+			&& one.source == b->source
+			&& one.val == b->val
+			&& one.sid == b->sid
+			&& one.valType == b->valType
+			&& one.additionalInfo == b->additionalInfo
+			&& one.effectRange == b->effectRange
+			&& one.description == b->description;
+		};
+
+		TBonusListPtr toRemove = origBearer->getBonuses(selector);
+
+		for(auto b : *toRemove)
+			bonusesToRemove.insert(b);
+
+		vstd::erase_if(bonusesToAdd, [&](const Bonus & b){return selector(&b);});
+		vstd::erase_if(bonusesToUpdate, [&](const Bonus & b){return selector(&b);});
+	}
+}
 
 HypotheticBattle::HypotheticBattle(Subject realBattle)
 	: BattleProxy(realBattle)
@@ -135,14 +181,25 @@ battle::Units HypotheticBattle::getUnitsIf(battle::UnitFilter predicate) const
 	return ret;
 }
 
-
 void HypotheticBattle::updateUnit(const CStackStateInfo & changes)
 {
 	std::shared_ptr<StackWithBonuses> changed = getForUpdate(changes.stackId);
 
 	changed->state.fromInfo(changes);
-
-	//todo: bonuses
 }
 
+void HypotheticBattle::addUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	getForUpdate(id)->addUnitBonus(bonus);
+}
+
+void HypotheticBattle::updateUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	getForUpdate(id)->updateUnitBonus(bonus);
+}
+
+void HypotheticBattle::removeUnitBonus(uint32_t id, const std::vector<Bonus> & bonus)
+{
+	getForUpdate(id)->removeUnitBonus(bonus);
+}
 

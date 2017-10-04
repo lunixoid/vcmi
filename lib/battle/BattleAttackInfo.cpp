@@ -11,9 +11,9 @@
 #include "BattleAttackInfo.h"
 
 
-BattleAttackInfo::BattleAttackInfo(const CStackState & Attacker, const CStackState & Defender, bool Shooting)
-	: attacker(Attacker),
-	defender(Defender)
+BattleAttackInfo::BattleAttackInfo(const IStackState * Attacker, const IStackState * Defender, bool Shooting)
+	: attacker(Attacker->asquire()),
+	defender(Defender->asquire())
 {
 	shooting = Shooting;
 	chargedFields = 0;

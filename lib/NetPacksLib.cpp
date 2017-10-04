@@ -1511,89 +1511,16 @@ DLL_LINKAGE void BattleSpellCast::applyGs(CGameState *gs)
 	}
 }
 
-void actualizeEffect(CStack * s, const Bonus & ef)
-{
-	for(auto stackBonus : s->getBonusList()) //TODO: optimize
-	{
-		if(stackBonus->source == Bonus::SPELL_EFFECT && stackBonus->type == ef.type && stackBonus->subtype == ef.subtype)
-		{
-			stackBonus->turnsRemain = std::max(stackBonus->turnsRemain, ef.turnsRemain);
-		}
-	}
-	CBonusSystemNode::treeHasChanged();
-}
-
 DLL_LINKAGE void SetStackEffect::applyGs(CGameState *gs)
 {
-	for(auto stackData : toRemove)
-	{
-		CStack * s = gs->curB->getStack(stackData.first);
-		if(!s)
-		{
-			logNetwork->error("Cannot find stack %d", stackData.first);
-			continue;
-		}
+	for(const auto & stackData : toRemove)
+		gs->curB->removeUnitBonus(stackData.first, stackData.second);
 
-		for(const Bonus & bonus : stackData.second)
-		{
-			auto selector = [bonus](const Bonus * b)
-			{
-				//compare everything but turnsRemain, limiter and propagator
-				return bonus.duration == b->duration
-				&& bonus.type == b->type
-				&& bonus.subtype == b->subtype
-				&& bonus.source == b->source
-				&& bonus.val == b->val
-				&& bonus.sid == b->sid
-				&& bonus.valType == b->valType
-				&& bonus.additionalInfo == b->additionalInfo
-				&& bonus.effectRange == b->effectRange
-				&& bonus.description == b->description;
-			};
-			s->popBonuses(selector);
-		}
-	}
+	for(const auto & stackData : toUpdate)
+		gs->curB->updateUnitBonus(stackData.first, stackData.second);
 
-	auto processEffect = [this](CStack * sta, const Bonus & effect, bool cumulative)
-	{
-		if(cumulative || !sta->hasBonus(Selector::source(Bonus::SPELL_EFFECT, effect.sid).And(Selector::typeSubtype(effect.type, effect.subtype))))
-		{
-			//no such effect or cumulative - add new
-			logBonus->trace("%s receives a new bonus: %s", sta->nodeName(), effect.Description());
-			sta->addNewBonus(std::make_shared<Bonus>(effect));
-		}
-		else
-		{
-			logBonus->trace("%s updated bonus: %s", sta->nodeName(), effect.Description());
-			actualizeEffect(sta, effect);
-		}
-	};
-
-	for(auto stackData : toUpdate)
-	{
-		CStack * s = gs->curB->getStack(stackData.first);
-		if(!s)
-		{
-			logNetwork->error("Cannot find stack %d", stackData.first);
-			continue;
-		}
-
-		for(const Bonus & bonus : stackData.second)
-			processEffect(s, bonus, false);
-	}
-
-	for(auto stackData : toAdd)
-	{
-		CStack * s = gs->curB->getStack(stackData.first);
-		if(!s)
-		{
-			logNetwork->error("Cannot find stack %d", stackData.first);
-			continue;
-		}
-
-		for(const Bonus & bonus : stackData.second)
-			processEffect(s, bonus, true);
-	}
+	for(const auto & stackData : toAdd)
+		gs->curB->addUnitBonus(stackData.first, stackData.second);
 }
 
 DLL_LINKAGE void StacksInjured::applyGs(CGameState *gs)

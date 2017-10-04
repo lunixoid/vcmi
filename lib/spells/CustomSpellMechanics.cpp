@@ -201,8 +201,8 @@ void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & p
 
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
-//	for(auto & p : toApply)
-//		p.first->apply(env, env->getRandomGenerator(), this, parameters, p.second);
+	for(auto & p : toApply)
+		p.first->apply(battleState, this, parameters, p.second);
 }
 
 Target CustomSpellMechanics::transformSpellTarget(const Target & aimPoint, const int spellLevel) const
