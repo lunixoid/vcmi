@@ -44,8 +44,6 @@ private:
 	const CGHeroInstance * otherHero;
 	int spellCost;
 	si32 damageToDisplay;
-
-	bool counteringSelector(const Bonus * bonus) const;
 };
 
 ///all combat spells

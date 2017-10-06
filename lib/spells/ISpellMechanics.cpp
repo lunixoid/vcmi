@@ -12,6 +12,7 @@
 #include "ISpellMechanics.h"
 
 #include "../CStack.h"
+#include "../HeroBonus.h"
 #include "../battle/CBattleInfoCallback.h"
 #include "../battle/IBattleState.h"
 
@@ -344,7 +345,6 @@ void BattleCast::cast(IBattleState * battleState)
 		aimToHex(BattleHex::INVALID);
 	auto m = spell->battleMechanics(cb, mode, caster);
 
-	//FIXME: spell countering
 	//TODO: reflection
 	//TODO: random effects evaluation
 
@@ -604,6 +604,20 @@ Mechanics::Mechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Cas
 }
 
 Mechanics::~Mechanics() = default;
+
+bool Mechanics::counteringSelector(const Bonus * bonus) const
+{
+	if(bonus->source != Bonus::SPELL_EFFECT)
+		return false;
+
+	for(const SpellID & id : owner->counteredSpells)
+	{
+		if(bonus->sid == id.toEnum())
+			return true;
+	}
+
+	return false;
+}
 
 BaseMechanics::BaseMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
 	: Mechanics(s, Cb, caster_)

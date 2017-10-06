@@ -18,6 +18,26 @@
 #include "serializer/JsonDeserializer.h"
 #include "serializer/JsonSerializer.h"
 
+int32_t IUnitInfo::creatureIndex() const
+{
+	return static_cast<int32_t>(creatureId().toEnum());
+}
+
+CreatureID IUnitInfo::creatureId() const
+{
+	return creatureType()->idNumber;
+}
+
+int32_t IUnitInfo::creatureLevel() const
+{
+	return static_cast<int32_t>(creatureType()->level);
+}
+
+bool IUnitInfo::doubleWide() const
+{
+	return creatureType()->doubleWide;
+}
+
 ///CAmmo
 CAmmo::CAmmo(const IUnitBonus * Owner, CSelector totalSelector)
 	: used(0),
@@ -537,11 +557,6 @@ bool CStackState::waited(int turn) const
 		return false;
 }
 
-bool CStackState::doubleWide() const
-{
-	return unit->doubleWide();
-}
-
 uint32_t CStackState::unitId() const
 {
 	return unit->unitId();
@@ -552,19 +567,9 @@ ui8 CStackState::unitSide() const
 	return unit->unitSide();
 }
 
-int32_t CStackState::creatureIndex() const
+const CCreature * CStackState::creatureType() const
 {
-	return unit->creatureIndex();
-}
-
-CreatureID CStackState::creatureId() const
-{
-	return unit->creatureId();
-}
-
-int32_t CStackState::creatureLevel() const
-{
-	return unit->creatureLevel();
+	return unit->creatureType();
 }
 
 SlotID CStackState::unitSlot() const
@@ -1206,19 +1211,9 @@ void CStack::spendMana(const spells::Mode mode, const CSpell * spell, const spel
 	}
 }
 
-int32_t CStack::creatureIndex() const
+const CCreature * CStack::creatureType() const
 {
-	return static_cast<int32_t>(creatureId().toEnum());
-}
-
-CreatureID CStack::creatureId() const
-{
-	return getCreature()->idNumber;
-}
-
-int32_t CStack::creatureLevel() const
-{
-	return static_cast<int32_t>(getCreature()->level);
+	return type;
 }
 
 int32_t CStack::unitMaxHealth() const
@@ -1249,11 +1244,6 @@ bool CStack::unitHasAmmoCart() const
 		}
 	}
 	return hasAmmoCart;
-}
-
-bool CStack::doubleWide() const
-{
-	return getCreature()->doubleWide;
 }
 
 uint32_t CStack::unitId() const

@@ -10,6 +10,7 @@
 #include "StdInc.h"
 #include "CustomSpellMechanics.h"
 #include "CDefaultSpellMechanics.h"
+#include "../battle/IBattleState.h"
 #include "../battle/CBattleInfoCallback.h"
 #include "Problem.h"
 
@@ -130,9 +131,13 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 		return false;
 	};
 
-	auto filterStack = [&](uint32_t id)
+	auto filterStack = [&](const IStackState * st)
 	{
-		const CStack * s = cb->battleGetStackByID(id, false);
+		const CStack * s = dynamic_cast<const CStack *>(st);
+
+		if(!s)
+			s = cb->battleGetStackByID(st->unitId(), false);
+
 		if(stackResisted(s))
 			resisted.push_back(s);
 		else if(stackReflected(s))
@@ -144,15 +149,7 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 	//prepare targets
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
-	//collect stacks from targets of all effects
-	std::set<uint32_t> stacks;
-
-	for(const auto & p : toApply)
-	{
-		for(const Destination & d : p.second)
-			if(d.stackValue)
-				stacks.insert(d.stackValue->unitId());
-	}
+	std::set<const IStackState *> stacks = collectTargets(toApply);
 
 	//process them
 	for(auto s : stacks)
@@ -192,8 +189,6 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 
 void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & parameters) const
 {
-	//TODO:  CustomSpellMechanics::cast
-
 	//TODO: evaluate caster updates (mana usage etc.)
 	//TODO: evaluate random values
 
@@ -201,9 +196,41 @@ void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & p
 
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
+	std::set<const IStackState *> stacks = collectTargets(toApply);
+
+	for(const IStackState * one : stacks)
+	{
+		auto bearer = one->unitAsBearer();
+		auto selector = std::bind(&Mechanics::counteringSelector, this, _1);
+
+		std::vector<Bonus> buffer;
+		auto bl = bearer->getBonuses(selector);
+
+		for(auto item : *bl)
+			buffer.emplace_back(*item);
+
+		if(!buffer.empty())
+			battleState->removeUnitBonus(one->unitId(), buffer);
+	}
+
 	for(auto & p : toApply)
 		p.first->apply(battleState, this, parameters, p.second);
 }
+
+std::set<const IStackState *> CustomSpellMechanics::collectTargets(const effects::Effects::EffectsToApply & from) const
+{
+	std::set<const IStackState *> result;
+
+	for(const auto & p : from)
+	{
+		for(const Destination & d : p.second)
+			if(d.stackValue)
+				result.insert(d.stackValue);
+	}
+
+	return result;
+}
+
 
 Target CustomSpellMechanics::transformSpellTarget(const Target & aimPoint, const int spellLevel) const
 {

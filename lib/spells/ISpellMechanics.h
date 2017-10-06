@@ -15,6 +15,7 @@
 
 struct Query;
 class IBattleState;
+struct Bonus;
 
 namespace spells
 {
@@ -158,6 +159,8 @@ public:
 	virtual void cast(IBattleState * battleState, const BattleCast & parameters) const = 0;
 
 	virtual bool isReceptive(const IStackState * target) const = 0;
+
+	bool counteringSelector(const Bonus * bonus) const;
 
 	Mode mode;
 	const CSpell * owner;

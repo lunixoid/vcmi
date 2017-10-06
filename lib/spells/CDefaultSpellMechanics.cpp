@@ -203,7 +203,7 @@ void SpellCastContext::beforeCast()
 
 void SpellCastContext::cast()
 {
-	DefaultSpellMechanics::doRemoveEffects(env, *this, std::bind(&SpellCastContext::counteringSelector, this, _1));
+	DefaultSpellMechanics::doRemoveEffects(env, *this, std::bind(&Mechanics::counteringSelector, mechanics, _1));
 
 	for(auto sta : attackedCres)
 		sc.affectedCres.insert(sta->ID);
@@ -234,21 +234,6 @@ void SpellCastContext::afterCast()
 		mechanics->caster->spendMana(mechanics->mode, mechanics->owner, env, 1);
 	}
 }
-
-bool SpellCastContext::counteringSelector(const Bonus * bonus) const
-{
-	if(bonus->source != Bonus::SPELL_EFFECT)
-		return false;
-
-	for(const SpellID & id : mechanics->owner->counteredSpells)
-	{
-		if(bonus->sid == id.toEnum())
-			return true;
-	}
-
-	return false;
-}
-
 
 ///DefaultSpellMechanics
 DefaultSpellMechanics::DefaultSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)

@@ -40,13 +40,16 @@ public:
 class DLL_LINKAGE IUnitInfo : public IUnitHealthInfo
 {
 public:
-	virtual bool doubleWide() const = 0;
+	bool doubleWide() const;
+
 	virtual uint32_t unitId() const = 0;
 	virtual ui8 unitSide() const = 0;
-	virtual int32_t creatureIndex() const = 0;
-	virtual CreatureID creatureId() const = 0;
-	virtual int32_t creatureLevel() const = 0;
 	virtual SlotID unitSlot() const = 0;
+
+	int32_t creatureIndex() const;
+	CreatureID creatureId() const;
+	int32_t creatureLevel() const;
+	virtual const CCreature * creatureType() const = 0;
 };
 
 class DLL_LINKAGE CAmmo
@@ -236,12 +239,11 @@ public:
 	bool willMove(int turn = 0) const override;
 	bool waited(int turn = 0) const override;
 
-	bool doubleWide() const override;
 	uint32_t unitId() const override;
 	ui8 unitSide() const override;
-	int32_t creatureIndex() const override;
-	CreatureID creatureId() const override;
-	int32_t creatureLevel() const override;
+
+	const CCreature * creatureType() const override;
+
 	SlotID unitSlot() const override;
 
 	int32_t unitMaxHealth() const override;
@@ -292,7 +294,7 @@ public:
 	CStack();
 	~CStack();
 
-	const CCreature * getCreature() const;
+	const CCreature * getCreature() const; //deprecated
 
 	std::string nodeName() const override;
 
@@ -352,9 +354,7 @@ public:
 
 	///IUnitInfo
 
-	int32_t creatureIndex() const override;
-	CreatureID creatureId() const override;
-	int32_t creatureLevel() const override;
+	const CCreature * creatureType() const override;
 
 	int32_t unitMaxHealth() const override;
 	int32_t unitBaseAmount() const override;
@@ -362,7 +362,6 @@ public:
 	const IBonusBearer * unitAsBearer() const override;
 	bool unitHasAmmoCart() const override;
 
-	bool doubleWide() const override;
 	uint32_t unitId() const override;
 	ui8 unitSide() const override;
 	SlotID unitSlot() const override;
