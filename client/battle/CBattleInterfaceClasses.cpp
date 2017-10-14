@@ -670,7 +670,8 @@ CHeroInfoWindow::CHeroInfoWindow(const InfoAboutHero &hero, Point *position) : C
 }
 
 CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
-:embedded(Embedded), owner(_owner)
+	: embedded(Embedded),
+	owner(_owner)
 {
 	OBJ_CONSTRUCTION_CAPTURING_ALL;
 	if(embedded)
@@ -679,6 +680,9 @@ CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 		pos.h = 46;
 		pos.x = screen->w/2 - pos.w/2;
 		pos.y = (screen->h - 600)/2 + 10;
+
+		icons = std::make_shared<CAnimation>("CPRSMALL");
+		stateIcons = std::make_shared<CAnimation>("VCMI/BATTLEQUEUE/STATESSMALL");
 	}
 	else
 	{
@@ -686,12 +690,18 @@ CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 		pos.h = 85;
 
 		new CFilledTexture("DIBOXBCK", Rect(0,0, pos.w, pos.h));
+
+		icons = std::make_shared<CAnimation>("TWCRPORT");
+		stateIcons = std::make_shared<CAnimation>("VCMI/BATTLEQUEUE/STATESSMALL");
+		//TODO: where use big icons?
+		//stateIcons = std::make_shared<CAnimation>("VCMI/BATTLEQUEUE/STATESBIG");
 	}
+	stateIcons->preload();
 
 	stackBoxes.resize(QUEUE_SIZE);
 	for (int i = 0; i < stackBoxes.size(); i++)
 	{
-		stackBoxes[i] = new StackBox(embedded);
+		stackBoxes[i] = new StackBox(this);
 		stackBoxes[i]->moveBy(Point(1 + (embedded ? 36 : 80)*i, 0));
 	}
 }
@@ -721,23 +731,29 @@ void CStackQueue::update()
 	}
 }
 
-CStackQueue::StackBox::StackBox(bool small)
+CStackQueue::StackBox::StackBox(CStackQueue * owner)
 {
 	OBJ_CONSTRUCTION_CAPTURING_ALL;
-	bg = new CPicture(small ? "StackQueueSmall" : "StackQueueLarge" );
+	bg = new CPicture(owner->embedded ? "StackQueueSmall" : "StackQueueLarge" );
 
 	pos.w = bg->pos.w;
 	pos.h = bg->pos.h;
 
-	if(small)
+	if(owner->embedded)
 	{
-		icon = new CAnimImage("CPRSMALL", 0, 0, 5, 2);
+		icon = new CAnimImage(owner->icons, 0, 0, 5, 2);
 		amount = new CLabel(pos.w/2, pos.h - 7, FONT_SMALL, CENTER, Colors::WHITE);
 	}
 	else
 	{
-		icon = new CAnimImage("TWCRPORT", 0, 0, 9, 1);
+		icon = new CAnimImage(owner->icons, 0, 0, 9, 1);
 		amount = new CLabel(pos.w/2, pos.h - 8, FONT_MEDIUM, CENTER, Colors::WHITE);
+
+		int icon_x = pos.w - 17;
+		int icon_y = pos.h - 18;
+
+		stateIcon = new CAnimImage(owner->stateIcons, 0, 0, icon_x, icon_y);
+		stateIcon->visible = false;
 	}
 }
 
@@ -749,6 +765,24 @@ void CStackQueue::StackBox::setStack(const IStackState * nStack)
 		icon->visible = true;
 		icon->setFrame(nStack->creatureType()->iconIndex);
 		amount->setText(makeNumberShort(nStack->getCount()));
+
+		if(stateIcon)
+		{
+			if(nStack->defended())
+			{
+				stateIcon->setFrame(0, 0);
+				stateIcon->visible = true;
+			}
+			else if(nStack->waited())
+			{
+				stateIcon->setFrame(1, 0);
+				stateIcon->visible = true;
+			}
+			else
+			{
+				stateIcon->visible = false;
+			}
+		}
 	}
 	else
 	{
@@ -756,5 +790,8 @@ void CStackQueue::StackBox::setStack(const IStackState * nStack)
 		icon->visible = false;
 		icon->setFrame(0);
 		amount->setText("");
+
+		if(stateIcon)
+			stateIcon->visible = false;
 	}
 }

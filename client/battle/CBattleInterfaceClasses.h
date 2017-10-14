@@ -143,17 +143,20 @@ class CStackQueue : public CIntObject
 		CPicture * bg;
 		CAnimImage * icon;
 		CLabel * amount;
+		CAnimImage * stateIcon;
 
 		void setStack(const IStackState * nStack);
-		StackBox(bool small);
+		StackBox(CStackQueue * owner);
 	};
 
 public:
 	static const int QUEUE_SIZE = 10;
 	const bool embedded;
 	std::vector<StackBox *> stackBoxes;
-
 	CBattleInterface * owner;
+
+	std::shared_ptr<CAnimation> icons;
+	std::shared_ptr<CAnimation> stateIcons;
 
 	CStackQueue(bool Embedded, CBattleInterface * _owner);
 	~CStackQueue();

@@ -176,6 +176,7 @@ public:
 	virtual BattleHex getPosition() const = 0;
 
 	virtual bool canMove(int turn = 0) const = 0; //if stack can move
+	virtual bool defended(int turn = 0) const = 0;
 	virtual bool moved(int turn = 0) const = 0; //if stack was already moved this turn
 	virtual bool willMove(int turn = 0) const = 0; //if stack has remaining move this turn
 	virtual bool waited(int turn = 0) const = 0;
@@ -238,6 +239,7 @@ public:
 	BattleHex getPosition() const override;
 
 	bool canMove(int turn = 0) const override;
+	bool defended(int turn = 0) const override;
 	bool moved(int turn = 0) const override;
 	bool willMove(int turn = 0) const override;
 	bool waited(int turn = 0) const override;
@@ -308,6 +310,7 @@ public:
 	std::string getName() const; //plural or singular
 
 	bool canMove(int turn = 0) const override;
+	bool defended(int turn = 0) const override;
 	bool moved(int turn = 0) const override;
 	bool willMove(int turn = 0) const override;
 	bool waited(int turn = 0) const override;

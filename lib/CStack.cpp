@@ -533,6 +533,14 @@ bool CStackState::canMove(int turn) const
 	return alive() && !unitAsBearer()->hasBonus(Selector::type(Bonus::NOT_ACTIVE).And(Selector::turns(turn))); //eg. Ammo Cart or blinded creature
 }
 
+bool CStackState::defended(int turn) const
+{
+	if(!turn)
+		return defending;
+	else
+		return false;
+}
+
 bool CStackState::moved(int turn) const
 {
 	if(!turn)
@@ -872,6 +880,11 @@ bool CStack::willMove(int turn) const
 bool CStack::canMove(int turn) const
 {
 	return stackState.canMove(turn);
+}
+
+bool CStack::defended(int turn) const
+{
+	return stackState.defended(turn);
 }
 
 bool CStack::moved(int turn) const
