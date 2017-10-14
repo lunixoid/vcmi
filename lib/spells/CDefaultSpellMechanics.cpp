@@ -196,9 +196,9 @@ void SpellCastContext::beforeCast()
 		}
 	}
 
-	sc.activeCast = parameters.mode == ECastingMode::HERO_CASTING ||
-		parameters.mode == ECastingMode::CREATURE_ACTIVE_CASTING ||
-		parameters.mode == ECastingMode::ENCHANTER_CASTING;
+	sc.activeCast = parameters.mode == Mode::HERO ||
+		parameters.mode == Mode::CREATURE_ACTIVE ||
+		parameters.mode == Mode::ENCHANTER;
 }
 
 void SpellCastContext::cast()

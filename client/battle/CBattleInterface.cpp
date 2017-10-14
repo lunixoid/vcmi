@@ -1313,7 +1313,7 @@ void CBattleInterface::spellCast(const BattleSpellCast * sc)
 	if(casterStack != nullptr && sc->activeCast)
 	{
 		//todo: custom cast animation for hero
-		displaySpellCast(spellID, casterStack->position);
+		displaySpellCast(spellID, casterStack->getPosition());
 
 		addNewAnim(new CCastAnimation(this, casterStack, sc->tile, curInt->cb->battleGetStackByPos(sc->tile)));
 	}
