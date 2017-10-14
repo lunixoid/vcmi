@@ -23,6 +23,7 @@ class CToggleGroup;
 class CLabel;
 struct BattleResult;
 class CStack;
+class IStackState;
 class CAnimImage;
 class CPlayerInterface;
 
@@ -141,18 +142,15 @@ class CStackQueue : public CIntObject
 	public:
 		CPicture * bg;
 		CAnimImage * icon;
-		const CStack *stack;
-		bool small;
+		CLabel * amount;
 
-		void showAll(SDL_Surface * to) override;
-		void setStack(const CStack *nStack);
+		void setStack(const IStackState * nStack);
 		StackBox(bool small);
 	};
 
 public:
 	static const int QUEUE_SIZE = 10;
 	const bool embedded;
-	std::vector<const CStack *> stacksSorted;
 	std::vector<StackBox *> stackBoxes;
 
 	SDL_Surface * bg;

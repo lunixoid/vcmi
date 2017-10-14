@@ -252,10 +252,9 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 			return nullptr;
 
 		const CStack * fastest = st[i], *other = nullptr;
-		int bestSpeed = fastest->Speed(turn);
+		int bestSpeed = fastest->unitAsBearer()->Speed(turn);
 
-		//FIXME: comparison between bool and integer. Logic does not makes sense either
-		if(fastest->side != lastMoved)
+		if(fastest->side == lastMoved)
 		{
 			ret = fastest;
 		}
@@ -264,7 +263,7 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 			for(j = i + 1; j < st.size(); j++)
 			{
 				if(!st[j]) continue;
-				if(st[j]->side != lastMoved || st[j]->Speed(turn) != bestSpeed)
+				if(st[j]->side != lastMoved || st[j]->unitAsBearer()->Speed(turn) != bestSpeed)
 					break;
 			}
 
@@ -275,7 +274,7 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 			else
 			{
 				other = st[j];
-				if(other->Speed(turn) != bestSpeed)
+				if(other->unitAsBearer()->Speed(turn) != bestSpeed)
 					ret = fastest;
 				else
 					ret = other;
@@ -317,7 +316,7 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 		return;
 	}
 
-	for(auto s : battleGetAllStacks(true))
+	for(auto s : allStacks)
 	{
 		if((turn <= 0 && !s->willMove()) //we are considering current round and stack won't move
 		|| (turn > 0 && !s->canMove(turn)) //stack won't be able to move in later rounds
@@ -326,22 +325,7 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 			continue;
 		}
 
-		int p = -1; //in which phase this stack will move?
-		if(turn <= 0 && s->waited()) //consider waiting state only for ongoing round
-		{
-			if(s->stackState.hadMorale)
-				p = 2;
-			else
-				p = 3;
-		}
-		else if(s->getCreature()->idNumber == CreatureID::CATAPULT || s->getCreature()->idNumber == CreatureID::ARROW_TOWERS) //catapult and turrets are first
-		{
-			p = 0;
-		}
-		else
-		{
-			p = 1;
-		}
+		int p = s->battleQueuePhase(turn);
 
 		phase[p].push_back(s);
 		toMove++;
@@ -360,11 +344,10 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 	{
 		if(active)
 		{
-			//FIXME: both branches contain same code!!!
 			if(out.size() && out.front() == active)
 				lastMoved = active->side;
 			else
-				lastMoved = active->side;
+				lastMoved = otherSide(active->side);
 		}
 		else
 		{

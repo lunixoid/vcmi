@@ -375,7 +375,6 @@ bool IStackState::isValidTarget(bool allowDead) const
 	return (alive() || (allowDead && isDead())) && getPosition().isValid() && !isTurret();
 }
 
-
 ///CStackState
 CStackState::CStackState(const IUnitInfo * unit_, const IUnitBonus * bonus_)
 	: unit(unit_),
@@ -572,6 +571,11 @@ const CCreature * CStackState::creatureType() const
 	return unit->creatureType();
 }
 
+PlayerColor CStackState::unitOwner() const
+{
+	return unit->unitOwner();
+}
+
 SlotID CStackState::unitSlot() const
 {
 	return unit->unitSlot();
@@ -595,6 +599,25 @@ const IBonusBearer * CStackState::unitAsBearer() const
 bool CStackState::unitHasAmmoCart() const
 {
 	return bonus->unitHasAmmoCart();
+}
+
+int CStackState::battleQueuePhase(int turn) const
+{
+	if(turn <= 0 && waited()) //consider waiting state only for ongoing round
+	{
+		if(hadMorale)
+			return 2;
+		else
+			return 3;
+	}
+	else if(creatureIndex() == CreatureID::CATAPULT || isTurret()) //catapult and turrets are first
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
 }
 
 CStackState CStackState::asquire() const
@@ -1256,6 +1279,11 @@ ui8 CStack::unitSide() const
 	return side;
 }
 
+PlayerColor CStack::unitOwner() const
+{
+	return owner;
+}
+
 SlotID CStack::unitSlot() const
 {
 	return slot;
@@ -1339,6 +1367,11 @@ BattleHex CStack::getPosition() const
 CStackState CStack::asquire() const
 {
 	return CStackState(stackState);
+}
+
+int CStack::battleQueuePhase(int turn) const
+{
+	return stackState.battleQueuePhase(turn);
 }
 
 void CStack::addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural) const

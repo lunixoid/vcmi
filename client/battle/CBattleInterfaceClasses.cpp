@@ -669,23 +669,6 @@ CHeroInfoWindow::CHeroInfoWindow(const InfoAboutHero &hero, Point *position) : C
 	new CLabel(39, 186, EFonts::FONT_TINY, EAlignment::CENTER, Colors::WHITE, std::to_string(currentSpellPoints) + "/" + std::to_string(maxSpellPoints));
 }
 
-void CStackQueue::update()
-{
-	stacksSorted.clear();
-	owner->getCurrentPlayerInterface()->cb->battleGetStackQueue(stacksSorted, stackBoxes.size());
-	if(stacksSorted.size())
-	{
-		for (int i = 0; i < stackBoxes.size() ; i++)
-		{
-			stackBoxes[i]->setStack(stacksSorted[i]);
-		}
-	}
-	else
-	{
-		//no stacks on battlefield... what to do with queue?
-	}
-}
-
 CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 :embedded(Embedded), owner(_owner)
 {
@@ -718,6 +701,24 @@ CStackQueue::~CStackQueue()
 	SDL_FreeSurface(bg);
 }
 
+void CStackQueue::update()
+{
+	std::vector<const CStack *> stacksSorted;
+
+	owner->getCurrentPlayerInterface()->cb->battleGetStackQueue(stacksSorted, stackBoxes.size());
+	if(stacksSorted.size())
+	{
+		for (int i = 0; i < stackBoxes.size() ; i++)
+		{
+			stackBoxes[i]->setStack(stacksSorted[i]);
+		}
+	}
+	else
+	{
+		//no stacks on battlefield... what to do with queue?
+	}
+}
+
 void CStackQueue::showAll(SDL_Surface * to)
 {
 	blitBg(to);
@@ -735,39 +736,32 @@ void CStackQueue::blitBg( SDL_Surface * to )
 	}
 }
 
-void CStackQueue::StackBox::showAll(SDL_Surface * to)
-{
-	assert(stack);
-	bg->colorize(stack->owner);
-	CIntObject::showAll(to);
-
-	if(small)
-		printAtMiddleLoc(makeNumberShort(stack->getCount()), pos.w/2, pos.h - 7, FONT_SMALL, Colors::WHITE, to);
-	else
-		printAtMiddleLoc(makeNumberShort(stack->getCount()), pos.w/2, pos.h - 8, FONT_MEDIUM, Colors::WHITE, to);
-}
-
-void CStackQueue::StackBox::setStack( const CStack *stack )
-{
-	this->stack = stack;
-	assert(stack);
-	icon->setFrame(stack->getCreature()->iconIndex);
-}
-
-CStackQueue::StackBox::StackBox(bool small):
-    stack(nullptr),
-    small(small)
+CStackQueue::StackBox::StackBox(bool small)
 {
 	OBJ_CONSTRUCTION_CAPTURING_ALL;
 	bg = new CPicture(small ? "StackQueueSmall" : "StackQueueLarge" );
 
-	if (small)
-	{
-		icon = new CAnimImage("CPRSMALL", 0, 0, 5, 2);
-	}
-	else
-		icon = new CAnimImage("TWCRPORT", 0, 0, 9, 1);
-
 	pos.w = bg->pos.w;
 	pos.h = bg->pos.h;
+
+	if(small)
+	{
+		icon = new CAnimImage("CPRSMALL", 0, 0, 5, 2);
+		amount = new CLabel(pos.w/2, pos.h - 7, FONT_SMALL, CENTER, Colors::WHITE);
+	}
+	else
+	{
+		icon = new CAnimImage("TWCRPORT", 0, 0, 9, 1);
+		amount = new CLabel(pos.w/2, pos.h - 8, FONT_MEDIUM, CENTER, Colors::WHITE);
+	}
+}
+
+void CStackQueue::StackBox::setStack(const IStackState * nStack)
+{
+	assert(nStack);
+
+	bg->colorize(nStack->unitOwner());
+
+	icon->setFrame(nStack->creatureType()->iconIndex);
+	amount->setText(makeNumberShort(nStack->getCount()));
 }

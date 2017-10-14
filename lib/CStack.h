@@ -44,6 +44,7 @@ public:
 
 	virtual uint32_t unitId() const = 0;
 	virtual ui8 unitSide() const = 0;
+	virtual PlayerColor unitOwner() const = 0;
 	virtual SlotID unitSlot() const = 0;
 
 	int32_t creatureIndex() const;
@@ -180,6 +181,8 @@ public:
 	virtual bool waited(int turn = 0) const = 0;
 
 	virtual CStackState asquire() const = 0;
+
+	virtual int battleQueuePhase(int turn) const = 0;
 };
 
 ///mutable part of CStack
@@ -243,6 +246,7 @@ public:
 	ui8 unitSide() const override;
 
 	const CCreature * creatureType() const override;
+	PlayerColor unitOwner() const override;
 
 	SlotID unitSlot() const override;
 
@@ -253,6 +257,8 @@ public:
 	bool unitHasAmmoCart() const override;
 
 	CStackState asquire() const	override;
+
+	int battleQueuePhase(int turn) const override;
 
 	void damage(int32_t & amount);
 	void heal(int32_t & amount, EHealLevel level, EHealPower power);
@@ -364,6 +370,7 @@ public:
 
 	uint32_t unitId() const override;
 	ui8 unitSide() const override;
+	PlayerColor unitOwner() const override;
 	SlotID unitSlot() const override;
 
 	///IStackState
@@ -389,6 +396,8 @@ public:
 
 	BattleHex getPosition() const override;
 	CStackState asquire() const	override;
+
+	int battleQueuePhase(int turn) const override;
 
 	///MetaStrings
 
