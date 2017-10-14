@@ -3483,11 +3483,7 @@ void CBattleInterface::showInterface(SDL_Surface *to)
 			posWithQueue.h += queue->pos.h;
 		}
 
-		//showing queue
-		if (!bresult)
-			queue->showAll(to);
-		else
-			queue->blitBg(to);
+		queue->showAll(to);
 	}
 
 	//printing border around interface

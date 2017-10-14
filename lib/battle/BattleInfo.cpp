@@ -17,17 +17,6 @@
 #include "../CGeneralTextHandler.h"
 
 ///BattleInfo
-const CStack * BattleInfo::getNextStack() const
-{
-	std::vector<const CStack *> hlp;
-	battleGetStackQueue(hlp, 1, -1);
-
-	if(hlp.size())
-		return hlp[0];
-	else
-		return nullptr;
-}
-
 std::pair< std::vector<BattleHex>, int > BattleInfo::getPath(BattleHex start, BattleHex dest, const CStack * stack)
 {
 	auto reachability = getReachability(stack);

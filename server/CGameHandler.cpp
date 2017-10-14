@@ -5815,8 +5815,26 @@ void CGameHandler::runBattle()
 
 		//stack loop
 
-		const CStack *next;
-		while(!battleResult.get() && (next = curB.getNextStack()) && next->willMove())
+		auto getNextStack = [this]() -> const CStack *
+		{
+			if(battleResult.get())
+				return nullptr;
+
+			std::vector<const CStack *> q;
+			gs->curB->battleGetStackQueue(q, 1, -1);
+
+			if(!q.empty())
+			{
+				const CStack * next = q[0];
+				if(next->willMove())
+					return next;
+			}
+
+			return nullptr;
+		};
+
+		const CStack * next = nullptr;
+		while((next = getNextStack()))
 		{
 			BattleStacksRemoved bsr;
 			for(auto stack : curB.stacks)

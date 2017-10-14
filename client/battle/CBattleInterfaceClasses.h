@@ -153,13 +153,9 @@ public:
 	const bool embedded;
 	std::vector<StackBox *> stackBoxes;
 
-	SDL_Surface * bg;
-
 	CBattleInterface * owner;
 
 	CStackQueue(bool Embedded, CBattleInterface * _owner);
 	~CStackQueue();
 	void update();
-	void showAll(SDL_Surface *to) override;
-	void blitBg(SDL_Surface * to);
 };

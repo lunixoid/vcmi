@@ -45,7 +45,7 @@ public:
 	std::vector<std::shared_ptr<const CObstacleInstance>> getAllAffectedObstaclesByStack(const CStack * stack) const;
 
 	const CStack * battleGetStackByPos(BattleHex pos, bool onlyAlive = true) const; //returns stack info by given pos
-	void battleGetStackQueue(std::vector<const CStack *> &out, const int howMany, const int turn = 0, int lastMoved = -1) const;
+	void battleGetStackQueue(std::vector<const CStack *> &out, const int howMany, const int turn = 0, int8_t lastMoved = -1) const;
 	void battleGetStackCountOutsideHexes(bool *ac) const; // returns hexes which when in front of a stack cause us to move the amount box back
 
 	///returns reachable hexes (valid movement destinations), DOES contain stack current position

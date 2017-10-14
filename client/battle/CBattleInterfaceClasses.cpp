@@ -675,7 +675,6 @@ CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 	OBJ_CONSTRUCTION_CAPTURING_ALL;
 	if(embedded)
 	{
-		bg = nullptr;
 		pos.w = QUEUE_SIZE * 37;
 		pos.h = 46;
 		pos.x = screen->w/2 - pos.w/2;
@@ -683,9 +682,10 @@ CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 	}
 	else
 	{
-		bg = BitmapHandler::loadBitmap("DIBOXBCK");
 		pos.w = 800;
 		pos.h = 85;
+
+		new CFilledTexture("DIBOXBCK", Rect(0,0, pos.w, pos.h));
 	}
 
 	stackBoxes.resize(QUEUE_SIZE);
@@ -698,7 +698,6 @@ CStackQueue::CStackQueue(bool Embedded, CBattleInterface * _owner)
 
 CStackQueue::~CStackQueue()
 {
-	SDL_FreeSurface(bg);
 }
 
 void CStackQueue::update()
@@ -715,24 +714,10 @@ void CStackQueue::update()
 	}
 	else
 	{
-		//no stacks on battlefield... what to do with queue?
-	}
-}
-
-void CStackQueue::showAll(SDL_Surface * to)
-{
-	blitBg(to);
-
-	CIntObject::showAll(to);
-}
-
-void CStackQueue::blitBg( SDL_Surface * to )
-{
-	if(bg)
-	{
-		SDL_SetClipRect(to, &pos);
-		CSDL_Ext::fillTexture(to, bg);
-		SDL_SetClipRect(to, nullptr);
+		for (int i = 0; i < stackBoxes.size() ; i++)
+		{
+			stackBoxes[i]->setStack(nullptr);
+		}
 	}
 }
 
@@ -758,10 +743,18 @@ CStackQueue::StackBox::StackBox(bool small)
 
 void CStackQueue::StackBox::setStack(const IStackState * nStack)
 {
-	assert(nStack);
-
-	bg->colorize(nStack->unitOwner());
-
-	icon->setFrame(nStack->creatureType()->iconIndex);
-	amount->setText(makeNumberShort(nStack->getCount()));
+	if(nStack)
+	{
+		bg->colorize(nStack->unitOwner());
+		icon->visible = true;
+		icon->setFrame(nStack->creatureType()->iconIndex);
+		amount->setText(makeNumberShort(nStack->getCount()));
+	}
+	else
+	{
+		bg->colorize(PlayerColor::NEUTRAL);
+		icon->visible = false;
+		icon->setFrame(0);
+		amount->setText("");
+	}
 }

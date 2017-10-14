@@ -233,63 +233,64 @@ const CStack* CBattleInfoCallback::battleGetStackByPos(BattleHex pos, bool onlyA
 	return nullptr;
 }
 
-void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, const int howMany, const int turn, int lastMoved) const
+//T is battle::Unit descendant
+template <typename T>
+const T * takeOneUnit(std::vector<const T *> & all, const int turn, int8_t & lastMoved)
 {
-	RETURN_IF_NOT_BATTLE();
+	const T * ret = nullptr;
+	unsigned i, //fastest stack
+			j=0; //fastest stack of the other side
+	for(i = 0; i < all.size(); i++)
+		if(all[i])
+			break;
 
-	//let's define a huge lambda
-	auto takeStack = [&](std::vector<const CStack *> &st) -> const CStack*
+	//no stacks left
+	if(i == all.size())
+		return nullptr;
+
+	const T * fastest = all[i], *other = nullptr;
+	int bestSpeed = fastest->unitAsBearer()->Speed(turn);
+
+	if(fastest->side == lastMoved)
 	{
-		const CStack * ret = nullptr;
-		unsigned i, //fastest stack
-				j=0; //fastest stack of the other side
-		for(i = 0; i < st.size(); i++)
-			if(st[i])
+		ret = fastest;
+	}
+	else
+	{
+		for(j = i + 1; j < all.size(); j++)
+		{
+			if(!all[j]) continue;
+			if(all[j]->side != lastMoved || all[j]->unitAsBearer()->Speed(turn) != bestSpeed)
 				break;
+		}
 
-		//no stacks left
-		if(i == st.size())
-			return nullptr;
-
-		const CStack * fastest = st[i], *other = nullptr;
-		int bestSpeed = fastest->unitAsBearer()->Speed(turn);
-
-		if(fastest->side == lastMoved)
+		if(j >= all.size())
 		{
 			ret = fastest;
 		}
 		else
 		{
-			for(j = i + 1; j < st.size(); j++)
-			{
-				if(!st[j]) continue;
-				if(st[j]->side != lastMoved || st[j]->unitAsBearer()->Speed(turn) != bestSpeed)
-					break;
-			}
-
-			if(j >= st.size())
-			{
+			other = all[j];
+			if(other->unitAsBearer()->Speed(turn) != bestSpeed)
 				ret = fastest;
-			}
 			else
-			{
-				other = st[j];
-				if(other->unitAsBearer()->Speed(turn) != bestSpeed)
-					ret = fastest;
-				else
-					ret = other;
-			}
+				ret = other;
 		}
+	}
 
-		assert(ret);
-		if(ret == fastest)
-			st[i] = nullptr;
-		else
-			st[j] = nullptr;
+	assert(ret);
+	if(ret == fastest)
+		all[i] = nullptr;
+	else
+		all[j] = nullptr;
 
-		lastMoved = ret->side;
-		return ret;
-	};
+	lastMoved = ret->side;
+	return ret;
+}
+
+void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, const int howMany, const int turn, int8_t lastMoved) const
+{
+	RETURN_IF_NOT_BATTLE();
 
 	//We'll split creatures with remaining movement to 4 buckets
 	// [0] - turrets/catapult,
@@ -358,7 +359,7 @@ void CBattleInfoCallback::battleGetStackQueue(std::vector<const CStack *> &out, 
 	int pi = 1;
 	while(out.size() < howMany)
 	{
-		const CStack * hlp = takeStack(phase[pi]);
+		const CStack * hlp = takeOneUnit(phase[pi], turn, lastMoved);
 		if(!hlp)
 		{
 			pi++;
