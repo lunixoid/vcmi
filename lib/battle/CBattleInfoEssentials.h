@@ -26,11 +26,10 @@ typedef std::function<bool(const CStack *)> TStackFilter;
 
 namespace battle
 {
-    using Unit = ::IStackState;
-    using Units = std::vector<const Unit *>;
-    using UnitFilter = std::function<bool(const Unit *)>;
+	using Unit = ::IStackState;
+	using Units = std::vector<const Unit *>;
+	using UnitFilter = std::function<bool(const Unit *)>;
 }
-
 
 namespace BattlePerspective
 {
@@ -71,6 +70,9 @@ public:
 	 */
 	TStacks battleGetStacksIf(TStackFilter predicate) const; //deprecated
 	battle::Units battleGetUnitsIf(battle::UnitFilter predicate) const;
+
+	const battle::Unit * battleGetUnitByID(uint32_t ID) const;
+	const battle::Unit * battleActiveUnit() const;
 
 	bool battleHasNativeStack(ui8 side) const;
 	const CGTownInstance * battleGetDefendedTown() const; //returns defended town if current battle is a siege, nullptr instead

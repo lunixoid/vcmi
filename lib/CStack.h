@@ -184,6 +184,9 @@ public:
 	virtual CStackState asquire() const = 0;
 
 	virtual int battleQueuePhase(int turn) const = 0;
+
+	virtual std::string getDescription() const;
+	std::vector<BattleHex> getSurroundingHexes(BattleHex assumedPosition = BattleHex::INVALID) const; // get six or 8 surrounding hexes depending on creature size
 };
 
 ///mutable part of CStack
@@ -322,7 +325,7 @@ public:
 	std::vector<si32> activeSpells() const; //returns vector of active spell IDs sorted by time of cast
 	const CGHeroInstance * getMyHero() const; //if stack belongs to hero (directly or was by him summoned) returns hero, nullptr otherwise
 
-	static bool isMeleeAttackPossible(const CStack * attacker, const CStack * defender, BattleHex attackerPos = BattleHex::INVALID, BattleHex defenderPos = BattleHex::INVALID);
+	static bool isMeleeAttackPossible(const IStackState * attacker, const IStackState * defender, BattleHex attackerPos = BattleHex::INVALID, BattleHex defenderPos = BattleHex::INVALID);
 
 	BattleHex occupiedHex() const; //returns number of occupied hex (not the position) if stack is double wide; otherwise -1
 	BattleHex occupiedHex(BattleHex assumedPos) const; //returns number of occupied hex (not the position) if stack is double wide and would stand on assumedPos; otherwise -1
@@ -330,7 +333,7 @@ public:
 	std::vector<BattleHex> getHexes(BattleHex assumedPos) const; //up to two occupied hexes, starting from front
 	static std::vector<BattleHex> getHexes(BattleHex assumedPos, bool twoHex, ui8 side); //up to two occupied hexes, starting from front
 	bool coversPos(BattleHex position) const; //checks also if unit is double-wide
-	std::vector<BattleHex> getSurroundingHexes(BattleHex attackerPos = BattleHex::INVALID) const; // get six or 8 surrounding hexes depending on creature size
+
 
 	BattleHex::EDir destShiftDir() const;
 
@@ -401,6 +404,7 @@ public:
 	CStackState asquire() const	override;
 
 	int battleQueuePhase(int turn) const override;
+	std::string getDescription() const override;
 
 	///MetaStrings
 

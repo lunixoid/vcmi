@@ -49,7 +49,7 @@ struct PossibleSpellcast
 {
 	const CSpell *spell;
 	BattleHex dest;
-	float value;
+	int64_t value;
 };
 
 class CBattleAI : public CBattleGameInterface

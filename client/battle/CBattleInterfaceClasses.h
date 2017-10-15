@@ -145,7 +145,7 @@ class CStackQueue : public CIntObject
 		CLabel * amount;
 		CAnimImage * stateIcon;
 
-		void setStack(const IStackState * nStack);
+		void setStack(const IStackState * nStack, size_t turn = 0);
 		StackBox(CStackQueue * owner);
 	};
 

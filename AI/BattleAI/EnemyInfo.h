@@ -9,16 +9,13 @@
  */
 #pragma once
 
-class CStack;
+class IStackState;
 
 class EnemyInfo
 {
 public:
-	const CStack * s;
-	EnemyInfo(const CStack * _s) : s(_s)
+	const IStackState * s;
+	EnemyInfo(const IStackState * _s) : s(_s)
 	{}
-	bool operator==(const EnemyInfo& ei) const
-	{
-		return s == ei.s;
-	}
+	bool operator==(const EnemyInfo & ei) const;
 };

@@ -99,6 +99,33 @@ battle::Units CBattleInfoEssentials::battleGetUnitsIf(battle::UnitFilter predica
 	return getBattle()->getUnitsIf(predicate);
 }
 
+const battle::Unit * CBattleInfoEssentials::battleGetUnitByID(uint32_t ID) const
+{
+	RETURN_IF_NOT_BATTLE(nullptr);
+
+	//TODO: consider using map ID -> Unit
+
+	auto ret = battleGetUnitsIf([=](const battle::Unit * unit)
+	{
+		return unit->unitId() == ID;
+	});
+
+	if(ret.empty())
+		return nullptr;
+	else
+		return ret[0];
+}
+
+const battle::Unit * CBattleInfoEssentials::battleActiveUnit() const
+{
+	RETURN_IF_NOT_BATTLE(nullptr);
+	auto id = getBattle()->getActiveStackID();
+	if(id >= 0)
+		return battleGetUnitByID(static_cast<uint32_t>(id));
+	else
+		return nullptr;
+}
+
 TStacks CBattleInfoEssentials::battleAliveStacks() const
 {
 	return battleGetStacksIf([](const CStack * s)

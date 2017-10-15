@@ -712,26 +712,27 @@ CStackQueue::~CStackQueue()
 
 void CStackQueue::update()
 {
-	std::vector<const CStack *> stacksSorted;
+	std::vector<battle::Units> queueData;
 
-	owner->getCurrentPlayerInterface()->cb->battleGetStackQueue(stacksSorted, stackBoxes.size());
-	if(stacksSorted.size())
+	owner->getCurrentPlayerInterface()->cb->battleGetTurnOrder(queueData, stackBoxes.size(), 0);
+
+	size_t boxIndex = 0;
+
+	for(size_t turn = 0; turn < queueData.size() && boxIndex < stackBoxes.size(); turn++)
 	{
-		for (int i = 0; i < stackBoxes.size() ; i++)
-		{
-			stackBoxes[i]->setStack(stacksSorted[i]);
-		}
+		for(size_t unitIndex = 0; unitIndex < queueData[turn].size() && boxIndex < stackBoxes.size(); boxIndex++, unitIndex++)
+			stackBoxes[boxIndex]->setStack(queueData[turn][unitIndex], turn);
 	}
-	else
-	{
-		for (int i = 0; i < stackBoxes.size() ; i++)
-		{
-			stackBoxes[i]->setStack(nullptr);
-		}
-	}
+
+	for(; boxIndex < stackBoxes.size(); boxIndex++)
+		stackBoxes[boxIndex]->setStack(nullptr);
 }
 
 CStackQueue::StackBox::StackBox(CStackQueue * owner)
+	: bg(nullptr),
+	icon(nullptr),
+	amount(nullptr),
+	stateIcon(nullptr)
 {
 	OBJ_CONSTRUCTION_CAPTURING_ALL;
 	bg = new CPicture(owner->embedded ? "StackQueueSmall" : "StackQueueLarge" );
@@ -757,7 +758,7 @@ CStackQueue::StackBox::StackBox(CStackQueue * owner)
 	}
 }
 
-void CStackQueue::StackBox::setStack(const IStackState * nStack)
+void CStackQueue::StackBox::setStack(const IStackState * nStack, size_t turn)
 {
 	if(nStack)
 	{
@@ -768,12 +769,12 @@ void CStackQueue::StackBox::setStack(const IStackState * nStack)
 
 		if(stateIcon)
 		{
-			if(nStack->defended())
+			if(nStack->defended(turn) || (turn > 0 && nStack->defended(turn - 1)))
 			{
 				stateIcon->setFrame(0, 0);
 				stateIcon->visible = true;
 			}
-			else if(nStack->waited())
+			else if(nStack->waited(turn))
 			{
 				stateIcon->setFrame(1, 0);
 				stateIcon->visible = true;

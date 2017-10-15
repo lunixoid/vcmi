@@ -4587,17 +4587,15 @@ void CGameHandler::stackTurnTrigger(const CStack *st)
 		{
 			bool unbind = true;
 			BonusList bl = *(st->getBonuses(Selector::type(Bonus::BIND_EFFECT)));
-			std::set<const CStack*> stacks = gs->curB-> batteAdjacentCreatures(st);
+			auto adjacent = gs->curB->battleAdjacentUnits(st);
 
 			for (auto b : bl)
 			{
 				const CStack * stack = gs->curB->battleGetStackByID(b->additionalInfo); //binding stack must be alive and adjacent
-				if (stack)
+				if(stack)
 				{
-					if (vstd::contains(stacks, stack)) //binding stack is still present
-					{
+					if(vstd::contains(adjacent, stack)) //binding stack is still present
 						unbind = false;
-					}
 				}
 			}
 			if (unbind)
@@ -5820,14 +5818,17 @@ void CGameHandler::runBattle()
 			if(battleResult.get())
 				return nullptr;
 
-			std::vector<const CStack *> q;
-			gs->curB->battleGetStackQueue(q, 1, -1);
+			std::vector<battle::Units> q;
+			gs->curB->battleGetTurnOrder(q, 1, 0, -1); //todo: get rid of "turn -1"
 
 			if(!q.empty())
 			{
-				const CStack * next = q[0];
-				if(next->willMove())
-					return next;
+				if(!q.front().empty())
+				{
+					auto next = q.front().front();
+					if(next->willMove())
+						return dynamic_cast<const CStack *>(next);
+				}
 			}
 
 			return nullptr;
@@ -5869,8 +5870,8 @@ void CGameHandler::runBattle()
 
 			if (next->hasBonusOfType(Bonus::ATTACKS_NEAREST_CREATURE)) //while in berserk
 			{
-				logGlobal->debug("Handle Berserk effect");
-				std::pair<const CStack *, int> attackInfo = curB.getNearestStack(next, boost::none);
+				logGlobal->trace("Handle Berserk effect");
+				std::pair<const IStackState *, BattleHex> attackInfo = curB.getNearestStack(next);
 				if (attackInfo.first != nullptr)
 				{
 					BattleAction attack;
@@ -5881,12 +5882,12 @@ void CGameHandler::runBattle()
 					attack.destinationTile = attackInfo.second;
 
 					makeAutomaticAction(next, attack);
-					logGlobal->debug("Attacked nearest target %s", attackInfo.first->nodeName());
+					logGlobal->trace("Attacked nearest target %s", attackInfo.first->getDescription());
 				}
 				else
 				{
 					makeStackDoNothing(next);
-					logGlobal->debug("No target found");
+					logGlobal->trace("No target found");
 				}
 				continue;
 			}

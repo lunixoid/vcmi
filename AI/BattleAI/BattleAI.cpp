@@ -222,42 +222,45 @@ void CBattleAI::attemptCastingSpell()
 	if(possibleCasts.empty())
 		return;
 
-	using ValueMap = std::map<const CStack *, int>;
+	using ValueMap = std::map<uint32_t, int64_t>;
 
-	auto evaluateQueue = [&](ValueMap & values, const TStacks & queue, HypotheticBattle * state)
+	auto evaluateQueue = [&](ValueMap & values, const std::vector<battle::Units> & queue, HypotheticBattle * state)
 	{
-		for(const CStack * stack : queue)
+		for(auto & turn : queue)
 		{
-			if(vstd::contains(values, stack))
-				break;
-
-			PotentialTargets pt(stack, state);
-
-			if(!pt.possibleAttacks.empty())
+			for(auto unit : turn)
 			{
-				AttackPossibility ap = pt.bestAction();
+				if(vstd::contains(values, unit->unitId()))
+					continue;
 
-				auto swb = state->getForUpdate(stack->unitId());
-				swb->state = ap.attack.attacker;
-				swb->state.position = ap.tile;
+				PotentialTargets pt(unit, state);
+
+				if(!pt.possibleAttacks.empty())
+				{
+					AttackPossibility ap = pt.bestAction();
+
+					auto swb = state->getForUpdate(unit->unitId());
+					swb->state = ap.attack.attacker;
+					swb->state.position = ap.tile;
 
 
-				swb = state->getForUpdate(ap.attack.defender.unitId());
-				swb->state = ap.attack.defender;
+					swb = state->getForUpdate(ap.attack.defender.unitId());
+					swb->state = ap.attack.defender;
+				}
+
+				auto bav = pt.bestActionValue();
+				const IStackState * info = unit;
+
+				//was unit actually changed?
+				auto iter = state->stackStates.find(unit->unitId());
+				if(iter != state->stackStates.end())
+					info = &iter->second->state;
+
+				//best action is from effective owner PoV, we need to convert to our PoV
+				if(state->battleGetOwner(info) != playerID)
+					bav = -bav;
+				values[unit->unitId()] = bav;
 			}
-
-			auto bav = pt.bestActionValue();
-			const IStackState * info = stack;
-
-			//was stack actually changed?
-			auto iter = state->stackStates.find(stack->unitId());
-			if(iter != state->stackStates.end())
-				info = &iter->second->state;
-
-			//best action is from effective owner PoV, we need to convert to our PoV
-			if(state->battleGetOwner(info) != playerID)
-				bav = -bav;
-			values[stack] = bav;
 		}
 	};
 
@@ -267,17 +270,18 @@ void CBattleAI::attemptCastingSpell()
 
 	auto amount = all.size();
 
-	TStacks queue;
-	cb->battleGetStackQueue(queue, amount);
+	std::vector<battle::Units> turnOrder;
+
+	cb->battleGetTurnOrder(turnOrder, amount, 2); //no more than 1 turn after current, each unit at least once
 
 	{
 		HypotheticBattle state(cb);
-		evaluateQueue(valueOfStack, queue, &state);
+		evaluateQueue(valueOfStack, turnOrder, &state);
 	}
 
-	auto evaluateSpellcast = [&] (const PossibleSpellcast &ps) -> double
+	auto evaluateSpellcast = [&] (const PossibleSpellcast &ps) -> int64_t
 	{
-		int totalGain = 0;
+		int64_t totalGain = 0;
 
 		HypotheticBattle state(cb);
 
@@ -285,15 +289,17 @@ void CBattleAI::attemptCastingSpell()
 		cast.aimToHex(ps.dest);
 		cast.cast(&state);
 
+		std::vector<battle::Units> newTurnOrder;
+		state.battleGetTurnOrder(newTurnOrder, amount, 2);
+
 		ValueMap newValueOfStack;
 
-		//FIXME: calculate new queue on hypothetic states
-		evaluateQueue(newValueOfStack, queue, &state);
+		evaluateQueue(newValueOfStack, newTurnOrder, &state);
 
 		for(auto sta : all)
 		{
-			auto newValue = getValOr(newValueOfStack, sta, 0);
-			auto oldValue = getValOr(valueOfStack, sta, 0);
+			auto newValue = getValOr(newValueOfStack, sta->unitId(), 0);
+			auto oldValue = getValOr(valueOfStack, sta->unitId(), 0);
 
 			auto gain = newValue - oldValue;
 
@@ -308,14 +314,13 @@ void CBattleAI::attemptCastingSpell()
 		if(totalGain != 0)
 			LOGFL("Total gain of cast %s at hex %d is %d", ps.spell->name % (ps.dest.hex) % (totalGain));
 
-		return (float)totalGain;
-
+		return totalGain;
 	};
 
 	for(PossibleSpellcast & psc : possibleCasts)
 		psc.value = evaluateSpellcast(psc);
 
-	auto pscValue = [] (const PossibleSpellcast &ps) -> float
+	auto pscValue = [] (const PossibleSpellcast &ps) -> int64_t
 	{
 		return ps.value;
 	};
@@ -334,7 +339,7 @@ void CBattleAI::attemptCastingSpell()
 	}
 	else
 	{
-		LOGFL("Best spell is %s. But it is actually useless (value %f).", castToPerform.spell->name % castToPerform.value);
+		LOGFL("Best spell is %s. But it is actually useless (value %d).", castToPerform.spell->name % castToPerform.value);
 	}
 }
 

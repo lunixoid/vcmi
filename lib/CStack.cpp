@@ -375,6 +375,52 @@ bool IStackState::isValidTarget(bool allowDead) const
 	return (alive() || (allowDead && isDead())) && getPosition().isValid() && !isTurret();
 }
 
+std::string IStackState::getDescription() const
+{
+	boost::format fmt("Unit %d of side %d");
+	fmt % unitId() % unitSide();
+	return fmt.str();
+}
+
+
+std::vector<BattleHex> IStackState::getSurroundingHexes(BattleHex assumedPosition) const
+{
+	BattleHex hex = (assumedPosition != BattleHex::INVALID) ? assumedPosition : getPosition(); //use hypothetical position
+	std::vector<BattleHex> hexes;
+	if(doubleWide())
+	{
+		const int WN = GameConstants::BFIELD_WIDTH;
+		if(unitSide() == BattleSide::ATTACKER)
+		{
+			//position is equal to front hex
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 2 : WN + 1), hexes);
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 1 : WN), hexes);
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN : WN - 1), hexes);
+			BattleHex::checkAndPush(hex - 2, hexes);
+			BattleHex::checkAndPush(hex + 1, hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 2 : WN - 1), hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 1 : WN), hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN : WN + 1), hexes);
+		}
+		else
+		{
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 1 : WN), hexes);
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN : WN - 1), hexes);
+			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN - 1 : WN - 2), hexes);
+			BattleHex::checkAndPush(hex + 2, hexes);
+			BattleHex::checkAndPush(hex - 1, hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 1 : WN), hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN : WN + 1), hexes);
+			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN + 1 : WN + 2), hexes);
+		}
+		return hexes;
+	}
+	else
+	{
+		return hex.neighbouringTiles();
+	}
+}
+
 ///CStackState
 CStackState::CStackState(const IUnitInfo * unit_, const IUnitBonus * bonus_)
 	: unit(unit_),
@@ -852,23 +898,18 @@ ui32 CStack::level() const
 
 si32 CStack::magicResistance() const
 {
-	si32 magicResistance;
-	if(base)  //TODO: make war machines receive aura of magic resistance
+	si32 magicResistance = IBonusBearer::magicResistance();
+
+	si32 auraBonus = 0;
+
+	for(auto one : battle->battleAdjacentUnits(this))
 	{
-		magicResistance = base->magicResistance();
-		int auraBonus = 0;
-		for(const CStack * stack : base->armyObj->battle-> batteAdjacentCreatures(this))
-		{
-			if(stack->owner == owner)
-			{
-				vstd::amax(auraBonus, stack->valOfBonuses(Bonus::SPELL_RESISTANCE_AURA)); //max value
-			}
-		}
-		magicResistance += auraBonus;
-		vstd::amin(magicResistance, 100);
+		if(one->unitOwner() == owner)
+			vstd::amax(auraBonus, one->unitAsBearer()->valOfBonuses(Bonus::SPELL_RESISTANCE_AURA)); //max value
 	}
-	else
-		magicResistance = type->magicResistance();
+	magicResistance += auraBonus;
+	vstd::amin(magicResistance, 100);
+
 	return magicResistance;
 }
 
@@ -946,44 +987,6 @@ std::vector<BattleHex> CStack::getHexes(BattleHex assumedPos, bool twoHex, ui8 s
 bool CStack::coversPos(BattleHex pos) const
 {
 	return vstd::contains(getHexes(), pos);
-}
-
-std::vector<BattleHex> CStack::getSurroundingHexes(BattleHex attackerPos) const
-{
-	BattleHex hex = (attackerPos != BattleHex::INVALID) ? attackerPos : stackState.position; //use hypothetical position
-	std::vector<BattleHex> hexes;
-	if(doubleWide())
-	{
-		const int WN = GameConstants::BFIELD_WIDTH;
-		if(side == BattleSide::ATTACKER)
-		{
-			//position is equal to front hex
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 2 : WN + 1), hexes);
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 1 : WN), hexes);
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN : WN - 1), hexes);
-			BattleHex::checkAndPush(hex - 2, hexes);
-			BattleHex::checkAndPush(hex + 1, hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 2 : WN - 1), hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 1 : WN), hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN : WN + 1), hexes);
-		}
-		else
-		{
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN + 1 : WN), hexes);
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN : WN - 1), hexes);
-			BattleHex::checkAndPush(hex - ((hex / WN) % 2 ? WN - 1 : WN - 2), hexes);
-			BattleHex::checkAndPush(hex + 2, hexes);
-			BattleHex::checkAndPush(hex - 1, hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN - 1 : WN), hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN : WN + 1), hexes);
-			BattleHex::checkAndPush(hex + ((hex / WN) % 2 ? WN + 1 : WN + 2), hexes);
-		}
-		return hexes;
-	}
-	else
-	{
-		return hex.neighbouringTiles();
-	}
 }
 
 BattleHex::EDir CStack::destShiftDir() const
@@ -1113,21 +1116,21 @@ void CStack::prepareAttacked(BattleStackAttacked & bsa, CRandomGenerator & rand,
 	bsa.newState.healthDelta = -bsa.damageAmount;
 }
 
-bool CStack::isMeleeAttackPossible(const CStack * attacker, const CStack * defender, BattleHex attackerPos, BattleHex defenderPos)
+bool CStack::isMeleeAttackPossible(const IStackState * attacker, const IStackState * defender, BattleHex attackerPos, BattleHex defenderPos)
 {
 	if(!attackerPos.isValid())
-		attackerPos = attacker->stackState.position;
+		attackerPos = attacker->getPosition();
 	if(!defenderPos.isValid())
-		defenderPos = defender->stackState.position;
+		defenderPos = defender->getPosition();
 
 	return
 		(BattleHex::mutualPosition(attackerPos, defenderPos) >= 0)//front <=> front
 		|| (attacker->doubleWide()//back <=> front
-			&& BattleHex::mutualPosition(attackerPos + (attacker->side == BattleSide::ATTACKER ? -1 : 1), defenderPos) >= 0)
+			&& BattleHex::mutualPosition(attackerPos + (attacker->unitSide() == BattleSide::ATTACKER ? -1 : 1), defenderPos) >= 0)
 		|| (defender->doubleWide()//front <=> back
-			&& BattleHex::mutualPosition(attackerPos, defenderPos + (defender->side == BattleSide::ATTACKER ? -1 : 1)) >= 0)
+			&& BattleHex::mutualPosition(attackerPos, defenderPos + (defender->unitSide() == BattleSide::ATTACKER ? -1 : 1)) >= 0)
 		|| (defender->doubleWide() && attacker->doubleWide()//back <=> back
-			&& BattleHex::mutualPosition(attackerPos + (attacker->side == BattleSide::ATTACKER ? -1 : 1), defenderPos + (defender->side == BattleSide::ATTACKER ? -1 : 1)) >= 0);
+			&& BattleHex::mutualPosition(attackerPos + (attacker->unitSide() == BattleSide::ATTACKER ? -1 : 1), defenderPos + (defender->unitSide() == BattleSide::ATTACKER ? -1 : 1)) >= 0);
 
 }
 
@@ -1385,6 +1388,11 @@ CStackState CStack::asquire() const
 int CStack::battleQueuePhase(int turn) const
 {
 	return stackState.battleQueuePhase(turn);
+}
+
+std::string CStack::getDescription() const
+{
+	return nodeName();
 }
 
 void CStack::addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural) const

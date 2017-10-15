@@ -129,18 +129,23 @@ CBattleInterface::CBattleInterface(const CCreatureSet *army1, const CCreatureSet
 	tacticsMode = static_cast<bool>(tacticianInterface);
 
 	//create stack queue
-	bool embedQueue = screen->h < 700;
+
+	bool embedQueue;
+
+	std::string queueSize = settings["battle"]["queueSize"].String();
+
+	if(queueSize == "auto")
+		embedQueue = screen->h < 700;
+	else
+		embedQueue = screen->h < 700 || queueSize == "small";
+
 	queue = new CStackQueue(embedQueue, this);
-	if (!embedQueue)
+	if(!embedQueue)
 	{
 		if (settings["battle"]["showQueue"].Bool())
 			pos.y += queue->pos.h / 2; //center whole window
 
 		queue->moveTo(Point(pos.x, pos.y - queue->pos.h));
-// 		queue->pos.x = pos.x;
-// 		queue->pos.y = pos.y - queue->pos.h;
-//  		pos.h += queue->pos.h;
-//  		center();
 	}
 	queue->update();
 
