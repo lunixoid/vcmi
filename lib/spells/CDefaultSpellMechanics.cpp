@@ -531,7 +531,7 @@ void DefaultSpellMechanics::cast(IBattleState * battleState, const BattleCast & 
 bool DefaultSpellMechanics::isImmuneByStack(const IStackState * obj) const
 {
 	//by default use general algorithm
-	return owner->internalIsImmune(cb, caster, obj);
+	return !isReceptive(obj);
 }
 
 bool DefaultSpellMechanics::dispellSelector(const Bonus * bonus)

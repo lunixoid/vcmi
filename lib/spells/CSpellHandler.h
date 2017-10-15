@@ -225,6 +225,8 @@ public:
 		TargetInfo(const CSpell * spell, const int level, spells::Mode mode);
 	};
 
+	using BTVector = std::vector<Bonus::BonusType>;
+
 	SpellID id;
 	std::string identifier;
 	std::string name;
@@ -319,19 +321,24 @@ public:
 		h & isOffensive;
 		h & targetType;
 
-		//TODO: convert to custom condition
-		h & immunities;
-		h & limiters;
-		h & absoluteImmunities;
-		h & absoluteLimiters;
-
 		if(version >= 780)
 		{
 			h & targetCondition;
 		}
-		else if(!h.saving)
+		else
 		{
-			targetCondition = convertTargetCondition(immunities, absoluteImmunities, limiters, absoluteLimiters);
+			BTVector immunities;
+			BTVector absoluteImmunities;
+			BTVector limiters;
+			BTVector absoluteLimiters;
+
+			h & immunities;
+			h & limiters;
+			h & absoluteImmunities;
+			h & absoluteLimiters;
+
+			if(!h.saving)
+				targetCondition = convertTargetCondition(immunities, absoluteImmunities, limiters, absoluteLimiters);
 		}
 
 		h & iconImmune;
@@ -383,15 +390,10 @@ public://internal, for use only by Mechanics classes
 	///returns raw damage or healed HP
 	int calculateRawEffectValue(int effectLevel, int basePowerMultiplier, int levelPowerMultiplier) const;
 
-	///generic immunity calculation
-	bool internalIsImmune(const CBattleInfoCallback * cb, const spells::Caster * caster, const IStackState * unit) const;
-
 	std::unique_ptr<spells::Mechanics> battleMechanics(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster) const;
 private:
 	void setIsOffensive(const bool val);
 	void setIsRising(const bool val);
-
-	using BTVector = std::vector<Bonus::BonusType>;
 
 	JsonNode convertTargetCondition(const BTVector & immunity, const BTVector & absImmunity, const BTVector & limit, const BTVector & absLimit) const;
 
@@ -408,11 +410,6 @@ private:
 	std::string attributes; //reference only attributes //todo: remove or include in configuration format, currently unused
 
 	ETargetType targetType;
-
-	BTVector immunities; //any of these grants immunity
-	BTVector absoluteImmunities; //any of these grants immunity, can't be negated
-	BTVector limiters; //all of them are required to be affected
-	BTVector absoluteLimiters; //all of them are required to be affected, can't be negated
 
 	///graphics related stuff
 	std::string iconImmune;

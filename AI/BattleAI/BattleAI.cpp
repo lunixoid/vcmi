@@ -180,7 +180,7 @@ SpellTypes spellType(const CSpell *spell)
 {
 	if (spell->isOffensiveSpell())
 		return OFFENSIVE_SPELL;
-	if (spell->hasEffects())
+	if (spell->hasEffects() || spell->hasSpecialEffects())
 		return TIMED_EFFECT;
 	return OTHER;
 }

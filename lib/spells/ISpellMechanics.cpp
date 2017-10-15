@@ -696,10 +696,7 @@ bool BaseMechanics::adaptProblem(ESpellCastProblem::ESpellCastProblem source, Pr
 
 bool BaseMechanics::isReceptive(const IStackState * target) const
 {
-	if(targetCondition)
-		return targetCondition->isReceptive(owner, target);
-	else
-		return true;
+	return targetCondition->isReceptive(cb, caster, owner, target);
 }
 
 } //namespace spells

@@ -197,7 +197,7 @@ bool StackEffect::isValidTarget(const Mechanics * m, const IStackState * s) cons
 
 bool StackEffect::isReceptive(const Mechanics * m, const IStackState * s) const
 {
-	return !m->owner->internalIsImmune(m->cb, m->caster, s);
+	return m->isReceptive(s);
 }
 
 bool StackEffect::isSmartTarget(const Mechanics * m, const IStackState * s, bool alwaysSmart) const

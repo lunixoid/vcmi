@@ -1273,7 +1273,7 @@ int CGameHandler::moveStack(int stack, BattleHex dest)
 
 	ret = path.second;
 
-	int creSpeed = gs->curB->tacticDistance ? GameConstants::BFIELD_SIZE : curStack->Speed();
+	int creSpeed = gs->curB->tacticDistance ? GameConstants::BFIELD_SIZE : curStack->Speed(0, true);
 
 	auto isGateDrawbridgeHex = [&](BattleHex hex) -> bool
 	{

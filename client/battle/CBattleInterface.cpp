@@ -1796,7 +1796,7 @@ void CBattleInterface::getPossibleActionsForStack(const CStack *stack, const boo
 		possibleActions.push_back(ATTACK); //all active stacks can attack
 		possibleActions.push_back(WALK_AND_ATTACK); //not all stacks can always walk, but we will check this elsewhere
 
-		if (stack->canMove() && stack->Speed()) //probably no reason to try move war machines or bound stacks
+		if (stack->canMove() && stack->Speed(0, true)) //probably no reason to try move war machines or bound stacks
 			possibleActions.push_back (MOVE_STACK); //all active stacks can attack
 
 		if (siegeH && stack->hasBonusOfType (Bonus::CATAPULT)) //TODO: check shots

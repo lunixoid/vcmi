@@ -574,6 +574,11 @@ BattleHex CStackState::getPosition() const
 	return position;
 }
 
+int32_t CStackState::getInitiative(int turn) const
+{
+	return unitAsBearer()->valOfBonuses(Selector::type(Bonus::STACKS_SPEED).And(Selector::turns(turn)));
+}
+
 bool CStackState::canMove(int turn) const
 {
 	return alive() && !unitAsBearer()->hasBonus(Selector::type(Bonus::NOT_ACTIVE).And(Selector::turns(turn))); //eg. Ammo Cart or blinded creature
@@ -1393,6 +1398,11 @@ int CStack::battleQueuePhase(int turn) const
 std::string CStack::getDescription() const
 {
 	return nodeName();
+}
+
+int32_t CStack::getInitiative(int turn) const
+{
+	return stackState.getInitiative(turn);
 }
 
 void CStack::addText(MetaString & text, ui8 type, int32_t serial, const boost::logic::tribool & plural) const

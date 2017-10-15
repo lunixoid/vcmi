@@ -266,7 +266,7 @@ const T * takeOneUnit(std::vector<const T *> & all, const int turn, int8_t & las
 		return nullptr;
 
 	const T * fastest = all[i], *other = nullptr;
-	int bestSpeed = fastest->unitAsBearer()->Speed(turn);
+	int bestSpeed = fastest->getInitiative(turn);
 
 	if(fastest->unitSide() == lastMoved)
 	{
@@ -277,7 +277,7 @@ const T * takeOneUnit(std::vector<const T *> & all, const int turn, int8_t & las
 		for(j = i + 1; j < all.size(); j++)
 		{
 			if(!all[j]) continue;
-			if(all[j]->unitSide() != lastMoved || all[j]->unitAsBearer()->Speed(turn) != bestSpeed)
+			if(all[j]->unitSide() != lastMoved || all[j]->getInitiative(turn) != bestSpeed)
 				break;
 		}
 
@@ -288,7 +288,7 @@ const T * takeOneUnit(std::vector<const T *> & all, const int turn, int8_t & las
 		else
 		{
 			other = all[j];
-			if(other->unitAsBearer()->Speed(turn) != bestSpeed)
+			if(other->getInitiative(turn) != bestSpeed)
 				ret = fastest;
 			else
 				ret = other;

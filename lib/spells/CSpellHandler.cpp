@@ -418,116 +418,6 @@ int CSpell::calculateRawEffectValue(int effectLevel, int basePowerMultiplier, in
 	return basePowerMultiplier * power + levelPowerMultiplier * getPower(effectLevel);
 }
 
-bool CSpell::internalIsImmune(const CBattleInfoCallback * cb, const spells::Caster * caster, const IStackState * unit) const
-{
-	auto obj = unit->unitAsBearer();
-	//todo: use new bonus API
-	//1. Check absolute limiters
-	for(auto b : absoluteLimiters)
-	{
-		if (!obj->hasBonusOfType(b))
-			return true;
-	}
-
-	//2. Check absolute immunities
-	for(auto b : absoluteImmunities)
-	{
-		if (obj->hasBonusOfType(b))
-			return true;
-	}
-
-	{
-		//spell-based spell immunity (only ANTIMAGIC in OH3) is treated as absolute
-		std::stringstream cachingStr;
-		cachingStr << "type_" << Bonus::LEVEL_SPELL_IMMUNITY << "source_" << Bonus::SPELL_EFFECT;
-
-		TBonusListPtr levelImmunitiesFromSpell = obj->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY).And(Selector::sourceType(Bonus::SPELL_EFFECT)), cachingStr.str());
-
-		if(levelImmunitiesFromSpell->size() > 0  &&  levelImmunitiesFromSpell->totalValue() >= level  &&  level)
-		{
-			return true;
-		}
-	}
-	{
-		//SPELL_IMMUNITY absolute case
-		std::stringstream cachingStr;
-		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << id.toEnum() << "addInfo_1";
-		if(obj->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, id.toEnum(), 1), cachingStr.str()))
-			return true;
-	}
-
-	//check receptivity
-	if (isPositive() && obj->hasBonusOfType(Bonus::RECEPTIVE)) //accept all positive spells
-		return false;
-
-	//3. Check negation
-	//Orb of vulnerability
-	//FIXME: Orb of vulnerability mechanics is not such trivial (issue 1791)
-	const bool battleWideNegation = obj->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 0);
-	const bool heroNegation = obj->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 1);
-	//anyone can cast on artifact holder`s stacks
-	if(heroNegation)
-		return false;
-	//this stack is from other player
-	//todo: NEGATE_ALL_NATURAL_IMMUNITIES special cases: dispell, chain lightning
-	else if(battleWideNegation)
-	{
-		if(!cb->battleMatchOwner(caster->getOwner(), unit, false))
-			return false;
-	}
-
-	//4. Check negatable limit
-	for(auto b : limiters)
-	{
-		if(!obj->hasBonusOfType(b))
-			return true;
-	}
-
-
-	//5. Check negatable immunities
-	for(auto b : immunities)
-	{
-		if(obj->hasBonusOfType(b))
-			return true;
-	}
-
-	//6. Check elemental immunities
-
-	bool tmp = false;
-
-	forEachSchool([&](const SpellSchoolInfo & cnf, bool & stop)
-	{
-		auto element = cnf.immunityBonus;
-
-		if(obj->hasBonusOfType(element, 0)) //always resist if immune to all spells altogether
-		{
-			tmp = true;
-			stop = true;
-		}
-		else if(!isPositive()) //negative or indifferent
-		{
-			if((isDamageSpell() && obj->hasBonusOfType(element, 2)) || obj->hasBonusOfType(element, 1))
-			{
-				tmp = true;
-				stop = true;
-			}
-		}
-	});
-
-	if(tmp)
-		return tmp;
-
-	TBonusListPtr levelImmunities = obj->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY));
-
-	if(obj->hasBonusOfType(Bonus::SPELL_IMMUNITY, id)
-		|| (levelImmunities->size() > 0 && levelImmunities->totalValue() >= level && level))
-	{
-		return true;
-	}
-
-	return false;
-}
-
 void CSpell::setIsOffensive(const bool val)
 {
 	isOffensive = val;
@@ -930,12 +820,24 @@ CSpell * CSpellHandler::loadFromJson(const JsonNode & json, const std::string & 
 		}
 	};
 
-	readBonusStruct("immunity", spell->immunities);
-	readBonusStruct("absoluteImmunity", spell->absoluteImmunities);
-	readBonusStruct("limit", spell->limiters);
-	readBonusStruct("absoluteLimit", spell->absoluteLimiters);
+	if(json["targetCondition"].isNull())
+	{
+		CSpell::BTVector immunities;
+		CSpell::BTVector absoluteImmunities;
+		CSpell::BTVector limiters;
+		CSpell::BTVector absoluteLimiters;
 
-	spell->targetCondition = json["targetCondition"];
+		readBonusStruct("immunity", immunities);
+		readBonusStruct("absoluteImmunity", absoluteImmunities);
+		readBonusStruct("limit", limiters);
+		readBonusStruct("absoluteLimit", absoluteLimiters);
+
+		spell->targetCondition = spell->convertTargetCondition(immunities, absoluteImmunities, limiters, absoluteLimiters);
+	}
+	else
+	{
+		spell->targetCondition = json["targetCondition"];
+	}
 
 	const JsonNode & graphicsNode = json["graphics"];
 

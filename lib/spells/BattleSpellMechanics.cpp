@@ -830,7 +830,7 @@ bool SacrificeMechanics::canBeCast(Problem & problem) const
 		//using isImmuneBy directly as this mechanics does not have overridden immunity check
 		//therefore we do not need to check caster and casting mode
 		//TODO: check that we really should check immunity for both stacks
-		const bool immune = owner->internalIsImmune(cb, caster, stack);
+		const bool immune = !isReceptive(stack);
 		const bool ownerMatches = stack->owner == caster->getOwner();
 
 		if(!immune && ownerMatches)

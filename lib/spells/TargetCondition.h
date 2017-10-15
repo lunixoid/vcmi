@@ -10,13 +10,15 @@
 
 #pragma once
 
+class JsonNode;
 class JsonSerializeFormat;
 class IStackState;
 class CSpell;
+class CBattleInfoCallback;
 
 namespace spells
 {
-
+class Caster;
 class Destination;
 
 class TargetCondition
@@ -44,13 +46,15 @@ public:
 	TargetCondition();
 	virtual ~TargetCondition();
 
-	bool isReceptive(const CSpell * spell, const IStackState * target) const;
+	bool isReceptive(const CBattleInfoCallback * cb, const Caster * caster, const CSpell * spell, const IStackState * target) const;
 
 	void serializeJson(JsonSerializeFormat & handler);
 protected:
 
 private:
 	bool check(const ItemVector & condition, const CSpell * spell, const IStackState * target) const;
+
+	void loadConditions(const JsonNode & source, bool exclusive, bool inverted);
 };
 
 } // namespace spells

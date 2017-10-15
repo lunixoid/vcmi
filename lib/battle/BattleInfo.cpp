@@ -912,7 +912,7 @@ bool CMP_stack::operator()(const IStackState * a, const IStackState * b)
 		return a->creatureIndex() > b->creatureIndex(); //catapult is 145 and turrets are 149
 	case 1: //fastest first, upper slot first
 		{
-			int as = a->unitAsBearer()->Speed(turn), bs = b->unitAsBearer()->Speed(turn);
+			int as = a->getInitiative(turn), bs = b->getInitiative(turn);
 			if(as != bs)
 				return as > bs;
 			else
@@ -922,7 +922,7 @@ bool CMP_stack::operator()(const IStackState * a, const IStackState * b)
 		//TODO: should be replaced with order of receiving morale!
 	case 3: //fastest last, upper slot first
 		{
-			int as = a->unitAsBearer()->Speed(turn), bs = b->unitAsBearer()->Speed(turn);
+			int as = a->getInitiative(turn), bs = b->getInitiative(turn);
 			if(as != bs)
 				return as < bs;
 			else
