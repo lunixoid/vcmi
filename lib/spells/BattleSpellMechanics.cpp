@@ -37,7 +37,7 @@ void HealingSpellMechanics::applyBattleEffects(const SpellCastEnvironment * env,
 	BattleStacksChanged shr;
 
 	//special case for Archangel
-	bool cure = mode == Mode::CREATURE_ACTIVE && owner->id == SpellID::RESURRECTION;
+	bool cure = mode == Mode::CREATURE_ACTIVE && getSpellIndex() == SpellID::RESURRECTION;
 
 	for(auto & attackedCre : ctx.attackedCres)
 	{
@@ -228,8 +228,8 @@ bool DispellMechanics::isImmuneByStack(const IStackState * obj) const
 	{
 		//SPELL_IMMUNITY absolute case
 		std::stringstream cachingStr;
-		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << owner->id.toEnum() << "addInfo_1";
-		if(bearer->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, owner->id.toEnum(), 1), cachingStr.str()))
+		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << getSpellIndex() << "addInfo_1";
+		if(bearer->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, getSpellIndex(), 1), cachingStr.str()))
 			return true;
 	}
 
@@ -490,7 +490,7 @@ void ObstacleMechanics::placeObstacle(const SpellCastEnvironment * env, const Ba
 	auto obstacle = std::make_shared<SpellCreatedObstacle>();
 	obstacle->pos = pos;
 	obstacle->casterSide = casterSide;
-	obstacle->ID = owner->id;
+	obstacle->ID = getSpellIndex();
 	obstacle->spellLevel = parameters.effectLevel;
 	obstacle->casterSpellPower = parameters.effectPower;
 	obstacle->uniqueID = obstacleIdToGive;
@@ -800,7 +800,7 @@ EHealLevel RisingSpellMechanics::getHealLevel(int effectLevel) const
 EHealPower RisingSpellMechanics::getHealPower(int effectLevel) const
 {
 	//this may be even distinct class
-	if((effectLevel <= 1) && (owner->id == SpellID::RESURRECTION))
+	if((effectLevel <= 1) && (getSpellIndex() == SpellID::RESURRECTION))
 		return EHealPower::ONE_BATTLE;
 	else
 		return EHealPower::PERMANENT;

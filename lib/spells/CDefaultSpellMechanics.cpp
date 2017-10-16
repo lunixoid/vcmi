@@ -125,7 +125,7 @@ SpellCastContext::SpellCastContext(const Mechanics * mechanics_, const SpellCast
 	mechanics(mechanics_), env(env_), attackedCres(), sc(), si(), parameters(parameters_), otherHero(nullptr), spellCost(0), damageToDisplay(0)
 {
 	sc.side = mechanics->casterSide;
-	sc.spellID = mechanics->owner->id;
+	sc.spellID = mechanics->getSpellId();
 	sc.skill = parameters.spellLvl;
 	sc.tile = parameters.getFirstDestinationHex();
 	sc.castByHero = parameters.mode == Mode::HERO;
@@ -332,7 +332,7 @@ void DefaultSpellMechanics::defaultTimedEffect(const SpellCastEnvironment * env,
 	}
 
 	//we need to know who cast Bind
-	if(owner->id == SpellID::BIND && casterStack && !normal.empty())
+	if(getSpellIndex() == SpellID::BIND && casterStack && !normal.empty())
 	{
 		normal.at(normal.size() - 1).additionalInfo = casterStack->ID;
 	}
@@ -340,7 +340,7 @@ void DefaultSpellMechanics::defaultTimedEffect(const SpellCastEnvironment * env,
 	std::shared_ptr<Bonus> bonus = nullptr;
 	auto casterHero = dynamic_cast<const CGHeroInstance *>(caster);
 	if(casterHero)
-		bonus = casterHero->getBonusLocalFirst(Selector::typeSubtype(Bonus::SPECIAL_PECULIAR_ENCHANT, owner->id));
+		bonus = casterHero->getBonusLocalFirst(Selector::typeSubtype(Bonus::SPECIAL_PECULIAR_ENCHANT, getSpellIndex()));
 	//TODO does hero specialty should affects his stack casting spells?
 
 	for(const IStackState * affected : target)
@@ -396,17 +396,17 @@ void DefaultSpellMechanics::defaultTimedEffect(const SpellCastEnvironment * env,
 			case 1: //only Coronius as yet
 				{
 					power = std::max(5 - tier, 0);
-					Bonus specialBonus(Bonus::N_TURNS, Bonus::PRIMARY_SKILL, Bonus::SPELL_EFFECT, power, owner->id, PrimarySkill::ATTACK);
+					Bonus specialBonus(Bonus::N_TURNS, Bonus::PRIMARY_SKILL, Bonus::SPELL_EFFECT, power, getSpellIndex(), PrimarySkill::ATTACK);
 					specialBonus.turnsRemain = duration;
 					toUpdate.push_back(specialBonus); //additional attack to Slayer effect
 				}
 				break;
 			}
 		}
-		if(casterHero && casterHero->hasBonusOfType(Bonus::SPECIAL_BLESS_DAMAGE, owner->id)) //TODO: better handling of bonus percentages
+		if(casterHero && casterHero->hasBonusOfType(Bonus::SPECIAL_BLESS_DAMAGE, getSpellIndex())) //TODO: better handling of bonus percentages
 		{
-			int damagePercent = casterHero->level * casterHero->valOfBonuses(Bonus::SPECIAL_BLESS_DAMAGE, owner->id.toEnum()) / tier;
-			Bonus specialBonus(Bonus::N_TURNS, Bonus::CREATURE_DAMAGE, Bonus::SPELL_EFFECT, damagePercent, owner->id, 0, Bonus::PERCENT_TO_ALL);
+			int damagePercent = casterHero->level * casterHero->valOfBonuses(Bonus::SPECIAL_BLESS_DAMAGE, getSpellIndex()) / tier;
+			Bonus specialBonus(Bonus::N_TURNS, Bonus::CREATURE_DAMAGE, Bonus::SPELL_EFFECT, damagePercent, getSpellIndex(), 0, Bonus::PERCENT_TO_ALL);
 			specialBonus.turnsRemain = duration;
 			toUpdate.push_back(specialBonus);
 		}
@@ -832,7 +832,7 @@ void RegularSpellMechanics::prepareBattleLog(SpellCastContext & ctx) const
 
 	displayDamage = false; //in most following cases damage info text is custom
 
-	switch(owner->id)
+	switch(getSpellIndex())
 	{
 	case SpellID::STONE_GAZE:
 		addLogLine(558, boost::logic::indeterminate);
@@ -891,7 +891,7 @@ void RegularSpellMechanics::prepareBattleLog(SpellCastContext & ctx) const
 		MetaString line;
 
 		line.addTxt(MetaString::GENERAL_TXT, 376);
-		line.addReplacement(MetaString::SPELL_NAME, owner->id.toEnum());
+		line.addReplacement(MetaString::SPELL_NAME, getSpellIndex());
 		line.addReplacement(ctx.getDamageToDisplay());
 
 		ctx.addBattleLog(std::move(line));

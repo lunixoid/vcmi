@@ -699,6 +699,17 @@ bool BaseMechanics::isReceptive(const IStackState * target) const
 	return targetCondition->isReceptive(cb, caster, owner, target);
 }
 
+int32_t BaseMechanics::getSpellIndex() const
+{
+	return getSpellId().toEnum();
+}
+
+SpellID BaseMechanics::getSpellId() const
+{
+	return owner->id;
+}
+
+
 } //namespace spells
 
 ///IAdventureSpellMechanics

@@ -70,7 +70,7 @@ void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, 
 			MetaString line;
 
 			line.addTxt(MetaString::GENERAL_TXT, 376);
-			line.addReplacement(MetaString::SPELL_NAME, m->owner->id.toEnum());
+			line.addReplacement(MetaString::SPELL_NAME, m->getSpellIndex());
 			line.addReplacement(damageToDisplay);
 
 			stacksInjured.battleLog.push_back(line);

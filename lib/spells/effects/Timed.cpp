@@ -50,7 +50,7 @@ void Timed::convertBonus(const Mechanics * m, int32_t & duration, std::vector<Bo
 			nb.turnsRemain = duration;
 		vstd::amax(maxDuration, nb.turnsRemain);
 
-		nb.sid = m->owner->id; //for all
+		nb.sid = m->getSpellIndex(); //for all
 		nb.source = Bonus::SPELL_EFFECT;//for all
 
 		//fix to original config: shield should display damage reduction
@@ -102,7 +102,7 @@ void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const Batt
 	std::shared_ptr<Bonus> bonus = nullptr;
 	auto casterHero = dynamic_cast<const CGHeroInstance *>(m->caster);
 	if(casterHero)
-		bonus = casterHero->getBonusLocalFirst(Selector::typeSubtype(Bonus::SPECIAL_PECULIAR_ENCHANT, m->owner->id));
+		bonus = casterHero->getBonusLocalFirst(Selector::typeSubtype(Bonus::SPECIAL_PECULIAR_ENCHANT, m->getSpellIndex()));
 	//TODO does hero specialty should affects his stack casting spells?
 
 	for(auto & t : target)
@@ -156,16 +156,16 @@ void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const Batt
 				break;
 			case 1: //only Coronius as yet
 				power = std::max(5 - tier, 0);
-				Bonus specialBonus(Bonus::N_TURNS, Bonus::PRIMARY_SKILL, Bonus::SPELL_EFFECT, power, m->owner->id, PrimarySkill::ATTACK);
+				Bonus specialBonus(Bonus::N_TURNS, Bonus::PRIMARY_SKILL, Bonus::SPELL_EFFECT, power, m->getSpellIndex(), PrimarySkill::ATTACK);
 				specialBonus.turnsRemain = duration;
 				buffer.push_back(specialBonus);
 				break;
 			}
 		}
-		if(casterHero && casterHero->hasBonusOfType(Bonus::SPECIAL_BLESS_DAMAGE, m->owner->id)) //TODO: better handling of bonus percentages
+		if(casterHero && casterHero->hasBonusOfType(Bonus::SPECIAL_BLESS_DAMAGE, m->getSpellIndex())) //TODO: better handling of bonus percentages
 		{
-			int damagePercent = casterHero->level * casterHero->valOfBonuses(Bonus::SPECIAL_BLESS_DAMAGE, m->owner->id.toEnum()) / tier;
-			Bonus specialBonus(Bonus::N_TURNS, Bonus::CREATURE_DAMAGE, Bonus::SPELL_EFFECT, damagePercent, m->owner->id, 0, Bonus::PERCENT_TO_ALL);
+			int damagePercent = casterHero->level * casterHero->valOfBonuses(Bonus::SPECIAL_BLESS_DAMAGE, m->getSpellIndex()) / tier;
+			Bonus specialBonus(Bonus::N_TURNS, Bonus::CREATURE_DAMAGE, Bonus::SPELL_EFFECT, damagePercent, m->getSpellIndex(), 0, Bonus::PERCENT_TO_ALL);
 			specialBonus.turnsRemain = duration;
 			buffer.push_back(specialBonus);
 		}

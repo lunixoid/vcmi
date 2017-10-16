@@ -11,6 +11,8 @@
 #include "BattleAI.h"
 #include "StackWithBonuses.h"
 #include "EnemyInfo.h"
+#include "PossibleSpellcast.h"
+#include "../../lib/CThreadHelper.h"
 #include "../../lib/spells/CSpellHandler.h"
 #include "../../lib/spells/ISpellMechanics.h"
 
@@ -214,7 +216,9 @@ void CBattleAI::attemptCastingSpell()
 	{
 		for(auto hex : getTargetsToConsider(spell, hero))
 		{
-			PossibleSpellcast ps = {spell, hex, 0};
+			PossibleSpellcast ps;
+			ps.dest = hex;
+			ps.spell = spell;
 			possibleCasts.push_back(ps);
 		}
 	}
@@ -222,7 +226,7 @@ void CBattleAI::attemptCastingSpell()
 	if(possibleCasts.empty())
 		return;
 
-	using ValueMap = std::map<uint32_t, int64_t>;
+	using ValueMap = PossibleSpellcast::ValueMap;
 
 	auto evaluateQueue = [&](ValueMap & values, const std::vector<battle::Units> & queue, HypotheticBattle * state)
 	{
@@ -279,14 +283,14 @@ void CBattleAI::attemptCastingSpell()
 		evaluateQueue(valueOfStack, turnOrder, &state);
 	}
 
-	auto evaluateSpellcast = [&] (const PossibleSpellcast &ps) -> int64_t
+	auto evaluateSpellcast = [&] (PossibleSpellcast * ps)
 	{
 		int64_t totalGain = 0;
 
 		HypotheticBattle state(cb);
 
-		spells::BattleCast cast(&state, hero, spells::Mode::HERO, ps.spell);
-		cast.aimToHex(ps.dest);
+		spells::BattleCast cast(&state, hero, spells::Mode::HERO, ps->spell);
+		cast.aimToHex(ps->dest);
 		cast.cast(&state);
 
 		std::vector<battle::Units> newTurnOrder;
@@ -305,20 +309,29 @@ void CBattleAI::attemptCastingSpell()
 
 			if(gain != 0)
 			{
-				LOGFL("%s would change %s by %d points (from %d to %d)",
-					  ps.spell->name % sta->nodeName() % (gain) % (oldValue) % (newValue));
+//				LOGFL("%s would change %s by %d points (from %d to %d)",
+//					  ps->spell->name % sta->nodeName() % (gain) % (oldValue) % (newValue));
 				totalGain += gain;
 			}
 		}
 
-		if(totalGain != 0)
-			LOGFL("Total gain of cast %s at hex %d is %d", ps.spell->name % (ps.dest.hex) % (totalGain));
+//		if(totalGain != 0)
+//			LOGFL("Total gain of cast %s at hex %d is %d", ps->spell->name % (ps->dest.hex) % (totalGain));
 
-		return totalGain;
+		ps->value = totalGain;
 	};
 
+	std::vector<std::function<void()>> tasks;
+
 	for(PossibleSpellcast & psc : possibleCasts)
-		psc.value = evaluateSpellcast(psc);
+	{
+		tasks.push_back(std::bind(evaluateSpellcast, &psc));
+
+		//evaluateSpellcast(&psc);
+	}
+
+	CThreadHelper threadHelper(&tasks, std::max<uint32_t>(boost::thread::hardware_concurrency(), 1));
+	threadHelper.run();
 
 	auto pscValue = [] (const PossibleSpellcast &ps) -> int64_t
 	{

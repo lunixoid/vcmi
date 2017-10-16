@@ -33,7 +33,7 @@ void AcidBreathDamageMechanics::applyBattleEffects(const SpellCastEnvironment * 
 	{
 		BattleStackAttacked bsa;
 		bsa.flags |= BattleStackAttacked::SPELL_EFFECT;
-		bsa.spellID = owner->id;
+		bsa.spellID = getSpellId();
 		bsa.damageAmount = parameters.effectPower; //damage times the number of attackers
 		bsa.stackAttacked = (attackedCre)->ID;
 		bsa.attackerID = -1;
@@ -55,8 +55,8 @@ bool AcidBreathDamageMechanics::isImmuneByStack(const IStackState * obj) const
 	{
 		//SPELL_IMMUNITY absolute case
 		std::stringstream cachingStr;
-		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << owner->id.toEnum() << "addInfo_1";
-		if(obj->unitAsBearer()->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, owner->id.toEnum(), 1), cachingStr.str()))
+		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << getSpellIndex() << "addInfo_1";
+		if(obj->unitAsBearer()->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, getSpellIndex(), 1), cachingStr.str()))
 			return true;
 	}
 	return false;
@@ -82,7 +82,7 @@ void DeathStareMechanics::applyBattleEffects(const SpellCastEnvironment * env, c
 	{
 		BattleStackAttacked bsa;
 		bsa.flags |= BattleStackAttacked::SPELL_EFFECT;
-		bsa.spellID = owner->id;
+		bsa.spellID = getSpellId();
 		bsa.damageAmount = parameters.effectPower * (attackedCre)->MaxHealth();//todo: move here all DeathStare calculation
 		bsa.stackAttacked = (attackedCre)->ID;
 		bsa.attackerID = -1;

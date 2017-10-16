@@ -162,6 +162,9 @@ public:
 
 	bool counteringSelector(const Bonus * bonus) const;
 
+	virtual int32_t getSpellIndex() const = 0;
+	virtual SpellID getSpellId() const = 0;
+
 	Mode mode;
 	const CSpell * owner;
 	const CBattleInfoCallback * cb;
@@ -183,6 +186,9 @@ public:
 	bool adaptProblem(ESpellCastProblem::ESpellCastProblem source, Problem & target) const override;
 	bool adaptGenericProblem(Problem & target) const override;
 	bool isReceptive(const IStackState * target) const override;
+
+	int32_t getSpellIndex() const override;
+	SpellID getSpellId() const override;
 };
 
 }// namespace spells
