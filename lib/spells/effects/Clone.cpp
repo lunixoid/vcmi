@@ -27,7 +27,8 @@ namespace effects
 VCMI_REGISTER_SPELL_EFFECT(Clone, EFFECT_NAME);
 
 Clone::Clone(const int level)
-	: StackEffect(level), maxTier(0)
+	: StackEffect(level),
+	maxTier(0)
 {
 }
 
@@ -37,7 +38,7 @@ void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 {
 	for(const Destination & dest : target)
 	{
-		const IStackState * clonedStack = dest.stackValue;
+		const battle::Unit * clonedStack = dest.stackValue;
 
 		//we shall have all targets to be stacks
 		if(!clonedStack)
@@ -91,7 +92,7 @@ void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 	}
 }
 
-bool Clone::isReceptive(const Mechanics * m, const IStackState * s) const
+bool Clone::isReceptive(const Mechanics * m, const battle::Unit * s) const
 {
 	int creLevel = s->creatureLevel();
 	if(creLevel > maxTier)
@@ -101,7 +102,7 @@ bool Clone::isReceptive(const Mechanics * m, const IStackState * s) const
 	return StackEffect::isReceptive(m, s);
 }
 
-bool Clone::isValidTarget(const Mechanics * m, const IStackState * s) const
+bool Clone::isValidTarget(const Mechanics * m, const battle::Unit * s) const
 {
 	//can't clone already cloned creature
 	if(s->isClone())

@@ -17,11 +17,11 @@ class Priorities
 {
 public:
 	std::vector<double> resourceTypeBaseValues;
-	std::function<double(const IStackState *)> stackEvaluator;
+	std::function<double(const battle::Unit *)> stackEvaluator;
 	Priorities()
 	{
 		//        range::copy(VLC->objh->resVals, std::back_inserter(resourceTypeBaseValues));
-		stackEvaluator = [](const IStackState *){ return 1.0; };
+		stackEvaluator = [](const battle::Unit *){ return 1.0; };
 	}
 };
 

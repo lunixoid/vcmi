@@ -40,9 +40,9 @@ int AttackPossibility::attackValue() const
 AttackPossibility AttackPossibility::evaluate(const BattleAttackInfo & AttackInfo, BattleHex hex)
 {
 	const int remainingCounterAttacks = AttackInfo.defender.counterAttacks.available();
-	const bool counterAttacksBlocked = AttackInfo.attacker.unitAsBearer()->hasBonusOfType(Bonus::BLOCKS_RETALIATION) || AttackInfo.defender.unitAsBearer()->hasBonusOfType(Bonus::NO_RETALIATION);
+	const bool counterAttacksBlocked = AttackInfo.attacker.hasBonusOfType(Bonus::BLOCKS_RETALIATION) || AttackInfo.defender.hasBonusOfType(Bonus::NO_RETALIATION);
 
-	const int totalAttacks = 1 + AttackInfo.attacker.unitAsBearer()->getBonuses(Selector::type(Bonus::ADDITIONAL_ATTACK), (Selector::effectRange (Bonus::NO_LIMIT).Or(Selector::effectRange(Bonus::ONLY_MELEE_FIGHT))))->totalValue();
+	const int totalAttacks = 1 + AttackInfo.attacker.getBonuses(Selector::type(Bonus::ADDITIONAL_ATTACK), (Selector::effectRange (Bonus::NO_LIMIT).Or(Selector::effectRange(Bonus::ONLY_MELEE_FIGHT))))->totalValue();
 
 	AttackPossibility ap = {AttackInfo.defender, hex, AttackInfo, 0, 0, 0};
 

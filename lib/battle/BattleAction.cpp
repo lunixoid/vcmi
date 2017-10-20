@@ -24,7 +24,7 @@ BattleAction::BattleAction():
 {
 }
 
-BattleAction BattleAction::makeHeal(const IStackState * healer, const IStackState * healed)
+BattleAction BattleAction::makeHeal(const battle::Unit * healer, const battle::Unit * healed)
 {
 	BattleAction ba;
 	ba.side = healer->unitSide();
@@ -34,7 +34,7 @@ BattleAction BattleAction::makeHeal(const IStackState * healer, const IStackStat
 	return ba;
 }
 
-BattleAction BattleAction::makeDefend(const IStackState * stack)
+BattleAction BattleAction::makeDefend(const battle::Unit * stack)
 {
 	BattleAction ba;
 	ba.side = stack->unitSide();
@@ -43,7 +43,7 @@ BattleAction BattleAction::makeDefend(const IStackState * stack)
 	return ba;
 }
 
-BattleAction BattleAction::makeMeleeAttack(const IStackState * stack, const IStackState * attacked, BattleHex attackFrom)
+BattleAction BattleAction::makeMeleeAttack(const battle::Unit * stack, const battle::Unit * attacked, BattleHex attackFrom)
 {
 	BattleAction ba;
 	ba.side = stack->unitSide(); //FIXME: will it fail if stack mind controlled?
@@ -54,7 +54,7 @@ BattleAction BattleAction::makeMeleeAttack(const IStackState * stack, const ISta
 	return ba;
 }
 
-BattleAction BattleAction::makeWait(const IStackState * stack)
+BattleAction BattleAction::makeWait(const battle::Unit * stack)
 {
 	BattleAction ba;
 	ba.side = stack->unitSide();
@@ -63,7 +63,7 @@ BattleAction BattleAction::makeWait(const IStackState * stack)
 	return ba;
 }
 
-BattleAction BattleAction::makeShotAttack(const IStackState * shooter, const IStackState * target)
+BattleAction BattleAction::makeShotAttack(const battle::Unit * shooter, const battle::Unit * target)
 {
 	BattleAction ba;
 	ba.side = shooter->unitSide();
@@ -73,7 +73,7 @@ BattleAction BattleAction::makeShotAttack(const IStackState * shooter, const ISt
 	return ba;
 }
 
-BattleAction BattleAction::makeMove(const IStackState * stack, BattleHex dest)
+BattleAction BattleAction::makeMove(const battle::Unit * stack, BattleHex dest)
 {
 	BattleAction ba;
 	ba.side = stack->unitSide();

@@ -47,14 +47,14 @@ class DLL_LINKAGE Destination
 public:
 	Destination();
 	~Destination() = default;
-	explicit Destination(const IStackState * destination);
+	explicit Destination(const battle::Unit * destination);
 	explicit Destination(const BattleHex & destination);
 
 	Destination(const Destination & other);
 
 	Destination & operator=(const Destination & other);
 
-	const IStackState * stackValue;
+	const battle::Unit * stackValue;
 	BattleHex hexValue;
 };
 
@@ -158,7 +158,7 @@ public:
 	virtual void cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector <const CStack*> & reflected) const = 0;
 	virtual void cast(IBattleState * battleState, const BattleCast & parameters) const = 0;
 
-	virtual bool isReceptive(const IStackState * target) const = 0;
+	virtual bool isReceptive(const battle::Unit * target) const = 0;
 
 	bool counteringSelector(const Bonus * bonus) const;
 
@@ -185,7 +185,7 @@ public:
 
 	bool adaptProblem(ESpellCastProblem::ESpellCastProblem source, Problem & target) const override;
 	bool adaptGenericProblem(Problem & target) const override;
-	bool isReceptive(const IStackState * target) const override;
+	bool isReceptive(const battle::Unit * target) const override;
 
 	int32_t getSpellIndex() const override;
 	SpellID getSpellId() const override;

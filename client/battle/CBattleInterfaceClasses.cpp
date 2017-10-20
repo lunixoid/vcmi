@@ -758,7 +758,7 @@ CStackQueue::StackBox::StackBox(CStackQueue * owner)
 	}
 }
 
-void CStackQueue::StackBox::setStack(const IStackState * nStack, size_t turn)
+void CStackQueue::StackBox::setStack(const battle::Unit * nStack, size_t turn)
 {
 	if(nStack)
 	{

@@ -32,7 +32,7 @@ public:
 	BonusCondition(BonusTypeID type_);
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 
 private:
 	BonusTypeID type;
@@ -44,7 +44,7 @@ public:
 	CreatureCondition(CreatureID type_);
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 
 private:
 	CreatureID type;
@@ -56,7 +56,7 @@ public:
 	AnitimagicCondition();
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 };
 
 class AbsoluteLevelCondition : public TargetCondition::Item
@@ -65,7 +65,7 @@ public:
 	AbsoluteLevelCondition();
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 };
 
 class ElementalCondition : public TargetCondition::Item
@@ -74,7 +74,7 @@ public:
 	ElementalCondition();
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 };
 
 class NormalLevelCondition : public TargetCondition::Item
@@ -83,7 +83,7 @@ public:
 	NormalLevelCondition();
 
 protected:
-	bool check(const CSpell * spell, const IStackState * target) const override;
+	bool check(const CSpell * spell, const battle::Unit * target) const override;
 };
 
 TargetCondition::Item::Item()
@@ -95,7 +95,7 @@ TargetCondition::Item::Item()
 
 TargetCondition::Item::~Item() = default;
 
-bool TargetCondition::Item::isReceptive(const CSpell * spell, const IStackState * target) const
+bool TargetCondition::Item::isReceptive(const CSpell * spell, const battle::Unit * target) const
 {
 	bool result = check(spell, target);
 
@@ -109,21 +109,19 @@ TargetCondition::TargetCondition() = default;
 
 TargetCondition::~TargetCondition() = default;
 
-bool TargetCondition::isReceptive(const CBattleInfoCallback * cb, const Caster * caster, const CSpell * spell, const IStackState * target) const
+bool TargetCondition::isReceptive(const CBattleInfoCallback * cb, const Caster * caster, const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * obj = target->unitAsBearer();
-
 	if(!check(absolute, spell, target))
 		return false;
 
 	//check receptivity
-	if(spell->isPositive() && obj->hasBonusOfType(Bonus::RECEPTIVE)) //accept all positive spells
+	if(spell->isPositive() && target->hasBonusOfType(Bonus::RECEPTIVE)) //accept all positive spells
 		return true;
 
 	//Orb of vulnerability
 	//FIXME: Orb of vulnerability mechanics is not such trivial (issue 1791)
-	const bool battleWideNegation = obj->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 0);
-	const bool heroNegation = obj->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 1);
+	const bool battleWideNegation = target->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 0);
+	const bool heroNegation = target->hasBonusOfType(Bonus::NEGATE_ALL_NATURAL_IMMUNITIES, 1);
 	//anyone can cast on artifact holder`s stacks
 	if(heroNegation)
 		return true;
@@ -183,7 +181,7 @@ void TargetCondition::serializeJson(JsonSerializeFormat & handler)
 	}
 }
 
-bool TargetCondition::check(const ItemVector & condition, const CSpell * spell, const IStackState * target) const
+bool TargetCondition::check(const ItemVector & condition, const CSpell * spell, const battle::Unit * target) const
 {
 	bool nonExclusiveCheck = false;
 	bool nonExclusiveExits = false;
@@ -278,12 +276,11 @@ AbsoluteLevelCondition::AbsoluteLevelCondition()
 	exclusive = true;
 }
 
-bool AbsoluteLevelCondition::check(const CSpell * spell, const IStackState * target) const
+bool AbsoluteLevelCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * obj = target->unitAsBearer();
 	std::stringstream cachingStr;
 	cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << spell->id.toEnum() << "addInfo_1";
-	if(obj->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, spell->id.toEnum(), 1), cachingStr.str()))
+	if(target->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, spell->id.toEnum(), 1), cachingStr.str()))
 		return false;
 	return true;
 }
@@ -295,13 +292,12 @@ AnitimagicCondition::AnitimagicCondition()
 	exclusive = true;
 }
 
-bool AnitimagicCondition::check(const CSpell * spell, const IStackState * target) const
+bool AnitimagicCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * obj = target->unitAsBearer();
 	std::stringstream cachingStr;
 	cachingStr << "type_" << Bonus::LEVEL_SPELL_IMMUNITY << "source_" << Bonus::SPELL_EFFECT;
 
-	TBonusListPtr levelImmunitiesFromSpell = obj->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY).And(Selector::sourceType(Bonus::SPELL_EFFECT)), cachingStr.str());
+	TBonusListPtr levelImmunitiesFromSpell = target->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY).And(Selector::sourceType(Bonus::SPELL_EFFECT)), cachingStr.str());
 
 	if(levelImmunitiesFromSpell->size() > 0 && levelImmunitiesFromSpell->totalValue() >= spell->level && spell->level)
 		return false;
@@ -315,11 +311,9 @@ BonusCondition::BonusCondition(BonusTypeID type_)
 {
 }
 
-bool BonusCondition::check(const CSpell * spell, const IStackState * target) const
+bool BonusCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * bearer = target->unitAsBearer();
-
-	return bearer->hasBonus(Selector::type(type));
+	return target->hasBonus(Selector::type(type));
 }
 
 ///CreatureCondition
@@ -328,7 +322,7 @@ CreatureCondition::CreatureCondition(CreatureID type_)
 {
 }
 
-bool CreatureCondition::check(const CSpell * spell, const IStackState * target) const
+bool CreatureCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
 	return target->creatureId() == type;
 }
@@ -340,23 +334,22 @@ ElementalCondition::ElementalCondition()
 	exclusive = true;
 }
 
-bool ElementalCondition::check(const CSpell * spell, const IStackState * target) const
+bool ElementalCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * obj = target->unitAsBearer();
 	bool elementalImmune = false;
 
 	spell->forEachSchool([&](const SpellSchoolInfo & cnf, bool & stop)
 	{
 		auto element = cnf.immunityBonus;
 
-		if(obj->hasBonusOfType(element, 0)) //always resist if immune to all spells altogether
+		if(target->hasBonusOfType(element, 0)) //always resist if immune to all spells altogether
 		{
 			elementalImmune = true;
 			stop = true;
 		}
 		else if(!spell->isPositive()) //negative or indifferent
 		{
-			if((spell->isDamageSpell() && obj->hasBonusOfType(element, 2)) || obj->hasBonusOfType(element, 1))
+			if((spell->isDamageSpell() && target->hasBonusOfType(element, 2)) || target->hasBonusOfType(element, 1))
 			{
 				elementalImmune = true;
 				stop = true;
@@ -373,12 +366,11 @@ NormalLevelCondition::NormalLevelCondition()
 	exclusive = true;
 }
 
-bool NormalLevelCondition::check(const CSpell * spell, const IStackState * target) const
+bool NormalLevelCondition::check(const CSpell * spell, const battle::Unit * target) const
 {
-	const IBonusBearer * obj = target->unitAsBearer();
-	TBonusListPtr levelImmunities = obj->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY));
+	TBonusListPtr levelImmunities = target->getBonuses(Selector::type(Bonus::LEVEL_SPELL_IMMUNITY));
 
-	if(obj->hasBonusOfType(Bonus::SPELL_IMMUNITY, spell->id)
+	if(target->hasBonusOfType(Bonus::SPELL_IMMUNITY, spell->id)
 		|| (levelImmunities->size() > 0 && levelImmunities->totalValue() >= spell->level && spell->level))
 		return false;
 	return true;

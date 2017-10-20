@@ -195,14 +195,14 @@ bool CureMechanics::dispellSelector(const Bonus * b)
 	return false; //not a spell effect
 }
 
-bool CureMechanics::isImmuneByStack(const IStackState * obj) const
+bool CureMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
 	//todo: move to config
-	if(obj->unitAsBearer()->hasBonusOfType(Bonus::SIEGE_WEAPON))
+	if(obj->hasBonusOfType(Bonus::SIEGE_WEAPON))
 		return true;
 
 	const bool insured = obj->getFirstHPleft() < obj->unitMaxHealth();
-	const bool debuffed = canDispell(obj->unitAsBearer(), dispellSelector, "CureMechanics::dispellSelector");
+	const bool debuffed = canDispell(obj, dispellSelector, "CureMechanics::dispellSelector");
 
 	if(!(insured || debuffed))
 		return true;
@@ -216,13 +216,13 @@ DispellMechanics::DispellMechanics(const CSpell * s, const CBattleInfoCallback *
 {
 }
 
-bool DispellMechanics::isImmuneByStack(const IStackState * obj) const
+bool DispellMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
 	//just in case
 	if(!obj->alive())
 		return true;
 
-	auto bearer = obj->unitAsBearer();
+	auto bearer = obj;
 
 	//DISPELL ignores all immunities, except specific absolute immunity(VCMI addition)
 	{
@@ -408,7 +408,7 @@ HypnotizeMechanics::HypnotizeMechanics(const CSpell * s, const CBattleInfoCallba
 {
 }
 
-bool HypnotizeMechanics::isImmuneByStack(const IStackState * obj) const
+bool HypnotizeMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
 	//todo: maybe do not resist on passive cast
 	//TODO: what with other creatures casting hypnotize, Faerie Dragons style?
@@ -547,7 +547,7 @@ bool LandMineMechanics::canBeCast(Problem & problem) const
 	return SpecialSpellMechanics::canBeCast(problem);
 }
 
-int LandMineMechanics::defaultDamageEffect(const SpellCastEnvironment * env, const BattleCast & parameters, StacksInjured & si, const std::vector<const IStackState *> & target) const
+int LandMineMechanics::defaultDamageEffect(const SpellCastEnvironment * env, const BattleCast & parameters, StacksInjured & si, const std::vector<const battle::Unit *> & target) const
 {
 	auto res = PatchObstacleMechanics::defaultDamageEffect(env, parameters, si, target);
 
@@ -852,7 +852,7 @@ bool SacrificeMechanics::canBeCast(Problem & problem) const
 
 void SacrificeMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
-	const IStackState * victim = nullptr;
+	const battle::Unit * victim = nullptr;
 	if(parameters.target.size() == 2)
 	{
 		victim = parameters.target[1].stackValue;
@@ -873,7 +873,7 @@ void SacrificeMechanics::applyBattleEffects(const SpellCastEnvironment * env, co
 
 int SacrificeMechanics::calculateHealedHP(const SpellCastEnvironment * env, const BattleCast& parameters, SpellCastContext & ctx) const
 {
-	const IStackState * victim = nullptr;
+	const battle::Unit * victim = nullptr;
 
 	if(parameters.target.size() == 2)
 	{
@@ -955,7 +955,7 @@ bool SpecialRisingSpellMechanics::canBeCastAt(BattleHex destination) const
 	return true;
 }
 
-bool SpecialRisingSpellMechanics::isImmuneByStack(const IStackState * obj) const
+bool SpecialRisingSpellMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
 	// following does apply to resurrect and animate dead(?) only
 	// for sacrifice health calculation and health limit check don't matter
@@ -977,64 +977,6 @@ bool SpecialRisingSpellMechanics::isImmuneByStack(const IStackState * obj) const
 	return RegularSpellMechanics::isImmuneByStack(obj);
 }
 
-///TeleportMechanics
-TeleportMechanics::TeleportMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
-{
-}
-
-void TeleportMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
-{
-	if(parameters.target.size() == 2)
-	{
-		//first destination hex to move to
-		const BattleHex destination = parameters.target[0].hexValue;
-		if(!destination.isValid())
-		{
-			env->complain("TeleportMechanics: invalid teleport destination");
-			return;
-		}
-
-		//second destination creature to move
-		auto target = parameters.target[1].stackValue;
-		if(nullptr == target)
-		{
-			env->complain("TeleportMechanics: no stack to teleport");
-			return;
-		}
-
-		if(!cb->battleCanTeleportTo(target, destination, parameters.effectLevel))
-		{
-			env->complain("TeleportMechanics: forbidden teleport");
-			return;
-		}
-
-		BattleStackMoved bsm;
-		bsm.distance = -1;
-		bsm.stack = target->unitId();
-		std::vector<BattleHex> tiles;
-		tiles.push_back(destination);
-		bsm.tilesToMove = tiles;
-		bsm.teleporting = true;
-		env->sendAndApply(&bsm);
-	}
-	else
-	{
-		env->complain("TeleportMechanics: 2 destinations required.");
-		return;
-	}
-}
-
-bool TeleportMechanics::canBeCast(Problem & problem) const
-{
-	if(mode == Mode::AFTER_ATTACK || mode == Mode::BEFORE_ATTACK || mode == Mode::SPELL_LIKE_ATTACK || mode == Mode::MAGIC_MIRROR)
-	{
-		logGlobal->warn("Invalid spell cast attempt: spell %s, mode %d", owner->name, (int)mode); //should not even try to do it
-		return adaptProblem(ESpellCastProblem::INVALID, problem);
-	}
-
-	return RegularSpellMechanics::canBeCast(problem);
-}
 
 } // namespace spells
 

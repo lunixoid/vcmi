@@ -40,7 +40,7 @@ public:
 private:
 	std::shared_ptr<effects::Effects> effects;
 
-	std::set<const IStackState *> collectTargets(const effects::Effects::EffectsToApply & from) const;
+	std::set<const battle::Unit *> collectTargets(const effects::Effects::EffectsToApply & from) const;
 
 	Target transformSpellTarget(const Target & aimPoint, const int spellLevel) const;
 };

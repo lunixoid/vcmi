@@ -9,13 +9,16 @@
  */
 #pragma once
 
-class IStackState;
+namespace battle
+{
+	class Unit;
+}
 
 class EnemyInfo
 {
 public:
-	const IStackState * s;
-	EnemyInfo(const IStackState * _s) : s(_s)
+	const battle::Unit * s;
+	EnemyInfo(const battle::Unit * _s) : s(_s)
 	{}
 	bool operator==(const EnemyInfo & ei) const;
 };

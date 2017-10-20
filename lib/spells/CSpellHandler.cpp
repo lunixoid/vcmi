@@ -375,13 +375,13 @@ bool CSpell::canBeCastAt(const CBattleInfoCallback * cb,  spells::Mode mode, con
 		return false;
 }
 
-int CSpell::adjustRawDamage(const spells::Caster * caster, const IStackState * affectedCreature, int rawDamage) const
+int CSpell::adjustRawDamage(const spells::Caster * caster, const battle::Unit * affectedCreature, int rawDamage) const
 {
 	int ret = rawDamage;
 	//affected creature-specific part
 	if(nullptr != affectedCreature)
 	{
-		auto bearer = affectedCreature->unitAsBearer();
+		auto bearer = affectedCreature;
 		//applying protections - when spell has more then one elements, only one protection should be applied (I think)
 		forEachSchool([&](const SpellSchoolInfo & cnf, bool & stop)
 		{

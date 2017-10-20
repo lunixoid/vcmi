@@ -16,7 +16,6 @@ class BattleHex;
 class CBattleInfoCallback;
 class JsonSerializeFormat;
 class CRandomGenerator;
-class IStackState;
 class IBattleState;
 
 namespace spells

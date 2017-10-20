@@ -451,7 +451,7 @@ std::vector<BattleHex> CBattleInfoCallback::battleGetAvailableHexes(const battle
 		else
 		{
 			//Not tactics phase -> destination must be reachable and within stack range.
-			if(reachability.distances[i] > stack->unitAsBearer()->Speed(0, true))
+			if(reachability.distances[i] > stack->Speed(0, true))
 				continue;
 		}
 
@@ -575,7 +575,7 @@ bool CBattleInfoCallback::battleCanShoot(const battle::Unit * attacker, BattleHe
 		return false;
 
 	//forgetfulness
-	TBonusListPtr forgetfulList = attacker->unitAsBearer()->getBonuses(Selector::type(Bonus::FORGETFULL));
+	TBonusListPtr forgetfulList = attacker->getBonuses(Selector::type(Bonus::FORGETFULL));
 	if(!forgetfulList->empty())
 	{
 		int forgetful = forgetfulList->valOfBonuses(Selector::type(Bonus::FORGETFULL));
@@ -591,7 +591,7 @@ bool CBattleInfoCallback::battleCanShoot(const battle::Unit * attacker, BattleHe
 	if(attacker->canShoot()
 		&& battleMatchOwner(attacker, defender)
 		&& defender->alive()
-		&& (!battleIsUnitBlocked(attacker) || attacker->unitAsBearer()->hasBonusOfType(Bonus::FREE_SHOOTING)))
+		&& (!battleIsUnitBlocked(attacker) || attacker->hasBonusOfType(Bonus::FREE_SHOOTING)))
 		return true;
 	return false;
 }
@@ -609,8 +609,8 @@ TDmgRange CBattleInfoCallback::calculateDmgRange(const BattleAttackInfo & info) 
 		return bearer->getBonuses(selector, noLimit.Or(limitMatches))->totalValue();
 	};
 
-	const IBonusBearer * attackerBonuses = info.attacker.unitAsBearer();
-	const IBonusBearer * defenderBonuses = info.defender.unitAsBearer();
+	const IBonusBearer * attackerBonuses = &info.attacker;
+	const IBonusBearer * defenderBonuses = &info.defender;
 
 	double additiveBonus = 1.0, multBonus = 1.0,
 			minDmg = attackerBonuses->getMinDamage() * info.attacker.getCount(),//TODO: ONLY_MELEE_FIGHT / ONLY_DISTANCE_FIGHT
@@ -1474,7 +1474,7 @@ bool CBattleInfoCallback::battleIsUnitBlocked(const battle::Unit * unit) const
 {
 	RETURN_IF_NOT_BATTLE(false);
 
-	if(unit->unitAsBearer()->hasBonusOfType(Bonus::SIEGE_WEAPON)) //siege weapons cannot be blocked
+	if(unit->hasBonusOfType(Bonus::SIEGE_WEAPON)) //siege weapons cannot be blocked
 		return false;
 
 	for(auto adjacent : battleAdjacentUnits(unit))

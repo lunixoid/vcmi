@@ -12,7 +12,7 @@
 #include "../CStack.h"
 #include "../GameConstants.h"
 
-bool AccessibilityInfo::accessible(BattleHex tile, const IStackState * stack) const
+bool AccessibilityInfo::accessible(BattleHex tile, const battle::Unit * stack) const
 {
 	return accessible(tile, stack->doubleWide(), stack->unitSide());
 }

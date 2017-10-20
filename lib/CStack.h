@@ -22,10 +22,14 @@ class CStackState;
 class CStackStateInfo;
 class JsonSerializeFormat;
 
-class DLL_LINKAGE IUnitBonus
+namespace battle
+{
+	class Unit;
+}
+
+class DLL_LINKAGE IUnitEnvironment
 {
 public:
-	virtual const IBonusBearer * unitAsBearer() const = 0;
 	virtual bool unitHasAmmoCart() const = 0; //todo: handle ammo cart with bonus system
 };
 
@@ -56,7 +60,7 @@ public:
 class DLL_LINKAGE CAmmo
 {
 public:
-	explicit CAmmo(const IUnitBonus * Owner, CSelector totalSelector);
+	explicit CAmmo(const battle::Unit * Owner, CSelector totalSelector);
 	explicit CAmmo(const CAmmo & other, CSelector totalSelector);
 
 	//bonus-related stuff if not copyable
@@ -75,23 +79,25 @@ public:
 	virtual void serializeJson(JsonSerializeFormat & handler);
 protected:
 	int32_t used;
-	const IUnitBonus * owner;
+	const battle::Unit * owner;
 	CBonusProxy totalProxy;
 };
 
 class DLL_LINKAGE CShots : public CAmmo
 {
 public:
-	explicit CShots(const IUnitBonus * Owner);
+	explicit CShots(const battle::Unit * Owner, const IUnitEnvironment * Env);
 	CShots(const CShots & other);
 	CShots & operator=(const CShots & other);
 	bool isLimited() const override;
+private:
+	const IUnitEnvironment * env;
 };
 
 class DLL_LINKAGE CCasts : public CAmmo
 {
 public:
-	explicit CCasts(const IUnitBonus * Owner);
+	explicit CCasts(const battle::Unit * Owner);
 	CCasts(const CCasts & other);
 	CCasts & operator=(const CCasts & other);
 };
@@ -99,7 +105,7 @@ public:
 class DLL_LINKAGE CRetaliations : public CAmmo
 {
 public:
-	explicit CRetaliations(const IUnitBonus * Owner);
+	explicit CRetaliations(const battle::Unit * Owner);
 	CRetaliations(const CRetaliations & other);
 	CRetaliations & operator=(const CRetaliations & other);
 	bool isLimited() const override;
@@ -146,9 +152,10 @@ private:
 };
 
 
-/// Stack state interface for outside
-/// to be used instead of CStack where possible
-class DLL_LINKAGE IStackState : public IUnitInfo, public IUnitBonus
+namespace battle
+{
+
+class DLL_LINKAGE Unit : public IUnitInfo, public virtual IBonusBearer
 {
 public:
 	virtual bool ableToRetaliate() const = 0;
@@ -191,8 +198,10 @@ public:
 	std::vector<BattleHex> getSurroundingHexes(BattleHex assumedPosition = BattleHex::INVALID) const; // get six or 8 surrounding hexes depending on creature size
 };
 
+}
+
 ///mutable part of CStack
-class DLL_LINKAGE CStackState : public IStackState
+class DLL_LINKAGE CStackState : public battle::Unit
 {
 public:
 	bool cloned;
@@ -218,7 +227,7 @@ public:
 	///position on battlefield; -2 - keep, -3 - lower tower, -4 - upper tower
 	BattleHex position;
 
-	explicit CStackState(const IUnitInfo * unit_, const IUnitBonus * bonus_);
+	explicit CStackState(const IUnitInfo * unit_, const IBonusBearer * bonus_, const IUnitEnvironment * env_);
 	CStackState(const CStackState & other);
 
 	CStackState & operator=(const CStackState & other);
@@ -261,9 +270,6 @@ public:
 	int32_t unitMaxHealth() const override;
 	int32_t unitBaseAmount() const override;
 
-	const IBonusBearer * unitAsBearer() const override;
-	bool unitHasAmmoCart() const override;
-
 	CStackState asquire() const	override;
 
 	int battleQueuePhase(int turn) const override;
@@ -280,14 +286,18 @@ public:
 
 	const IUnitInfo * getUnitInfo() const;
 
+	const TBonusListPtr getAllBonuses(const CSelector & selector, const CSelector & limit,
+		const CBonusSystemNode * root = nullptr, const std::string & cachingStr = "") const override;
+
 private:
 	const IUnitInfo * unit;
-	const IUnitBonus * bonus;
+	const IBonusBearer * bonus;
+	const IUnitEnvironment * env;
 
 	void reset();
 };
 
-class DLL_LINKAGE CStack : public CBonusSystemNode, public spells::Caster, public IStackState
+class DLL_LINKAGE CStack : public CBonusSystemNode, public spells::Caster, public battle::Unit, public IUnitEnvironment
 {
 public:
 	const CStackInstance * base; //garrison slot from which stack originates (nullptr for war machines, summoned cres, etc)
@@ -328,7 +338,7 @@ public:
 	std::vector<si32> activeSpells() const; //returns vector of active spell IDs sorted by time of cast
 	const CGHeroInstance * getMyHero() const; //if stack belongs to hero (directly or was by him summoned) returns hero, nullptr otherwise
 
-	static bool isMeleeAttackPossible(const IStackState * attacker, const IStackState * defender, BattleHex attackerPos = BattleHex::INVALID, BattleHex defenderPos = BattleHex::INVALID);
+	static bool isMeleeAttackPossible(const battle::Unit * attacker, const battle::Unit * defender, BattleHex attackerPos = BattleHex::INVALID, BattleHex defenderPos = BattleHex::INVALID);
 
 	BattleHex occupiedHex() const; //returns number of occupied hex (not the position) if stack is double wide; otherwise -1
 	BattleHex occupiedHex(BattleHex assumedPos) const; //returns number of occupied hex (not the position) if stack is double wide and would stand on assumedPos; otherwise -1
@@ -349,7 +359,7 @@ public:
 	///default spell school level for effect calculation
 	int getEffectLevel(const spells::Mode mode, const CSpell * spell) const override;
 
-	ui32 getSpellBonus(const CSpell * spell, ui32 base, const IStackState * affectedStack) const override;
+	ui32 getSpellBonus(const CSpell * spell, ui32 base, const battle::Unit * affectedStack) const override;
 	ui32 getSpecificSpellBonus(const CSpell * spell, ui32 base) const override;
 
 	///default spell-power for damage/heal calculation
@@ -374,7 +384,6 @@ public:
 	int32_t unitMaxHealth() const override;
 	int32_t unitBaseAmount() const override;
 
-	const IBonusBearer * unitAsBearer() const override;
 	bool unitHasAmmoCart() const override;
 
 	uint32_t unitId() const override;
@@ -382,7 +391,7 @@ public:
 	PlayerColor unitOwner() const override;
 	SlotID unitSlot() const override;
 
-	///IStackState
+	///battle::Unit
 
 	bool ableToRetaliate() const override;
 	bool alive() const override;

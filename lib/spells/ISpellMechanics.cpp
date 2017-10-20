@@ -156,6 +156,25 @@ public:
 	}
 };
 
+class TeleportMechanicsFactory : public CustomMechanicsFactory
+{
+public:
+	TeleportMechanicsFactory(const CSpell * s)
+		: CustomMechanicsFactory(s)
+	{
+		for(int level = 0; level < GameConstants::SPELL_SCHOOL_LEVELS; level++)
+		{
+			std::string effectName = "core:teleport";
+			JsonNode config(JsonNode::DATA_STRUCT);
+			JsonSerializer ser(nullptr, config);
+
+			auto guard = ser.enterStruct(effectName);
+			ser.serializeString("type", effectName);
+			loadEffects(config, level);
+		}
+	}
+};
+
 //to be used for spells configured with old format
 class FallbackMechanicsFactory : public CustomMechanicsFactory
 {
@@ -205,7 +224,7 @@ Destination::Destination()
 
 }
 
-Destination::Destination(const IStackState * destination)
+Destination::Destination(const battle::Unit * destination)
 	: stackValue(destination),
 	hexValue(destination->getPosition())
 {
@@ -390,131 +409,6 @@ ISpellMechanicsFactory::~ISpellMechanicsFactory()
 
 std::unique_ptr<ISpellMechanicsFactory> ISpellMechanicsFactory::get(const CSpell * s)
 {
-	//TODO: use it
-	//TODO: immunity special cases
-	static const std::map<SpellID, std::vector<std::string>> SPECIAL_EFFECTS =
-	{
-		{
-			SpellID::ANIMATE_DEAD,
-			{
-				"core:heal"//need configuration
-			}
-		},
-		{
-			SpellID::RESURRECTION,
-			{
-				"core:heal"//need configuration
-			}
-		},
-		{
-			SpellID::ANTI_MAGIC,
-			{
-				"core:timed",
-				"core:dispel"//need configuration
-			}
-		},
-		{
-			SpellID::ACID_BREATH_DAMAGE,
-			{
-				"core:acid"
-			}
-		},
-		{
-			SpellID::CHAIN_LIGHTNING,
-			{
-				"core:chainDamage"
-			}
-		},
-		{
-			SpellID::CLONE,
-			{
-				"core:clone"
-			}
-		},
-		{
-			SpellID::CURE,
-			{
-				"core:dispel",//need configuration
-				"core:heal"//need configuration
-			}
-		},
-		{
-			SpellID::DEATH_STARE,//custom immunity
-			{
-				"core:deathStare"
-			}
-		},
-		{
-			SpellID::DISPEL,//custom immunity
-			{
-				"core:dispel",//need configuration
-				"core:removeObstacle"//need configuration
-			}
-		},
-		{
-			SpellID::DISPEL_HELPFUL_SPELLS,
-			{
-				"core:dispel"//need configuration
-			}
-		},
-		{
-			SpellID::EARTHQUAKE,
-			{
-				"core:catapult"
-			}
-		},
-		{
-			SpellID::FIRE_WALL,
-			{
-				"core:obstacle",//need configuration
-				"core:damage"
-			}
-		},
-		{
-			SpellID::FORCE_FIELD,
-			{
-				"core:obstacle"//need configuration
-			}
-		},
-		{
-			SpellID::HYPNOTIZE,//custom immunity
-			{
-				"core:timed"
-			}
-		},
-		{
-			SpellID::LAND_MINE,
-			{
-				"core:obstacle",//need configuration
-				"core:damage"
-			}
-		},
-		{
-			SpellID::QUICKSAND,
-			{
-				"core:obstacle"//need configuration
-			}
-		},
-		{
-			SpellID::REMOVE_OBSTACLE,
-			{
-				"core:removeObstacle"
-			}
-		},
-		{
-			SpellID::SACRIFICE,
-			{
-				"core:heal",//need configuration
-				"core:removeStack"
-			}
-		},
-		{
-			SpellID::TELEPORT,
-			{
-				"core:teleport"
-			}
-		}
-	};
 
 	//ignore spell id if there are special effects
 	if(s->hasSpecialEffects())
@@ -533,6 +427,8 @@ std::unique_ptr<ISpellMechanicsFactory> ISpellMechanicsFactory::get(const CSpell
 		return make_unique<SummonMechanicsFactory>(s, CreatureID::AIR_ELEMENTAL);
 	case SpellID::CLONE:
 		return make_unique<CloneMechanicsFactory>(s);
+	case SpellID::TELEPORT:
+		return make_unique<TeleportMechanicsFactory>(s);
 	default:
 		break;
 	}
@@ -573,8 +469,6 @@ std::unique_ptr<ISpellMechanicsFactory> ISpellMechanicsFactory::get(const CSpell
 		return make_unique<SpellMechanicsFactory<RemoveObstacleMechanics>>(s);
 	case SpellID::SACRIFICE:
 		return make_unique<SpellMechanicsFactory<SacrificeMechanics>>(s);
-	case SpellID::TELEPORT:
-		return make_unique<SpellMechanicsFactory<TeleportMechanics>>(s);
 	case SpellID::STONE_GAZE:
 	case SpellID::POISON:
 	case SpellID::BIND:
@@ -694,7 +588,7 @@ bool BaseMechanics::adaptProblem(ESpellCastProblem::ESpellCastProblem source, Pr
 	return false;
 }
 
-bool BaseMechanics::isReceptive(const IStackState * target) const
+bool BaseMechanics::isReceptive(const battle::Unit * target) const
 {
 	return targetCondition->isReceptive(cb, caster, owner, target);
 }

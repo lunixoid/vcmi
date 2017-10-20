@@ -904,7 +904,7 @@ CGHeroInstance * BattleInfo::battleGetFightingHero(ui8 side) const
 }
 
 
-bool CMP_stack::operator()(const IStackState * a, const IStackState * b)
+bool CMP_stack::operator()(const battle::Unit * a, const battle::Unit * b)
 {
 	switch(phase)
 	{

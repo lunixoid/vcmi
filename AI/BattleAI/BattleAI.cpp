@@ -253,15 +253,9 @@ void CBattleAI::attemptCastingSpell()
 				}
 
 				auto bav = pt.bestActionValue();
-				const IStackState * info = unit;
-
-				//was unit actually changed?
-				auto iter = state->stackStates.find(unit->unitId());
-				if(iter != state->stackStates.end())
-					info = &iter->second->state;
 
 				//best action is from effective owner PoV, we need to convert to our PoV
-				if(state->battleGetOwner(info) != playerID)
+				if(state->battleGetOwner(unit) != playerID)
 					bav = -bav;
 				values[unit->unitId()] = bav;
 			}

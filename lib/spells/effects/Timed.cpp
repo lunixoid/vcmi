@@ -110,7 +110,7 @@ void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const Batt
 		std::vector<Bonus> buffer;
 		std::copy(converted.begin(), converted.end(), std::back_inserter(buffer));
 
-		const IStackState * affected = t.stackValue;
+		const battle::Unit * affected = t.stackValue;
 		if(!affected)
 		{
 			logGlobal->error("[Internal error] Invalid target for timed effect");

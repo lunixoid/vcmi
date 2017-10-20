@@ -10,10 +10,10 @@
 #include "StdInc.h"
 #include "PotentialTargets.h"
 
-PotentialTargets::PotentialTargets(const IStackState * attacker, const HypotheticBattle * state)
+PotentialTargets::PotentialTargets(const battle::Unit * attacker, const HypotheticBattle * state)
 {
 	auto attIter = state->stackStates.find(attacker->unitId());
-	const IStackState * attackerInfo = (attIter == state->stackStates.end()) ? attacker : (IStackState *)&attIter->second->state;
+	const battle::Unit * attackerInfo = (attIter == state->stackStates.end()) ? attacker : (battle::Unit *)&attIter->second->state;
 
 	auto dists = state->battleGetDistances(attackerInfo, attackerInfo->getPosition());
 	auto avHexes = state->battleGetAvailableHexes(attackerInfo, attackerInfo->getPosition());
@@ -23,7 +23,7 @@ PotentialTargets::PotentialTargets(const IStackState * attacker, const Hypotheti
 	const battle::Unit * forcedTarget = nullptr;
 	BattleHex forcedHex;
 
-	if(attackerInfo->unitAsBearer()->hasBonusOfType(Bonus::ATTACKS_NEAREST_CREATURE))
+	if(attackerInfo->hasBonusOfType(Bonus::ATTACKS_NEAREST_CREATURE))
 	{
 		forceTarget = true;
 		auto nearest = state->getNearestStack(attackerInfo);

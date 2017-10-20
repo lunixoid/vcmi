@@ -88,7 +88,7 @@ std::vector<const CStack *> CustomSpellMechanics::getAffectedStacks(int spellLvl
 	{
 		if(dest.stackValue)
 		{
-			//FIXME: remove and return IStackState
+			//FIXME: remove and return battle::Unit
 			stacks.insert(cb->battleGetStackByID(dest.stackValue->unitId(), false));
 		}
 	}
@@ -131,7 +131,7 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 		return false;
 	};
 
-	auto filterStack = [&](const IStackState * st)
+	auto filterStack = [&](const battle::Unit * st)
 	{
 		const CStack * s = dynamic_cast<const CStack *>(st);
 
@@ -149,7 +149,7 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 	//prepare targets
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
-	std::set<const IStackState *> stacks = collectTargets(toApply);
+	std::set<const battle::Unit *> stacks = collectTargets(toApply);
 
 	//process them
 	for(auto s : stacks)
@@ -196,15 +196,14 @@ void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & p
 
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
-	std::set<const IStackState *> stacks = collectTargets(toApply);
+	std::set<const battle::Unit *> stacks = collectTargets(toApply);
 
-	for(const IStackState * one : stacks)
+	for(const battle::Unit * one : stacks)
 	{
-		auto bearer = one->unitAsBearer();
 		auto selector = std::bind(&Mechanics::counteringSelector, this, _1);
 
 		std::vector<Bonus> buffer;
-		auto bl = bearer->getBonuses(selector);
+		auto bl = one->getBonuses(selector);
 
 		for(auto item : *bl)
 			buffer.emplace_back(*item);
@@ -217,9 +216,9 @@ void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & p
 		p.first->apply(battleState, this, parameters, p.second);
 }
 
-std::set<const IStackState *> CustomSpellMechanics::collectTargets(const effects::Effects::EffectsToApply & from) const
+std::set<const battle::Unit *> CustomSpellMechanics::collectTargets(const effects::Effects::EffectsToApply & from) const
 {
-	std::set<const IStackState *> result;
+	std::set<const battle::Unit *> result;
 
 	for(const auto & p : from)
 	{

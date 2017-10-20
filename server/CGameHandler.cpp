@@ -103,7 +103,7 @@ public:
 		return obs->spellLevel;
 	}
 
-	ui32 getSpellBonus(const CSpell * spell, ui32 base, const IStackState * affectedStack) const override
+	ui32 getSpellBonus(const CSpell * spell, ui32 base, const battle::Unit * affectedStack) const override
 	{
 		if(hero)
 			return hero->getSpellBonus(spell, base, affectedStack);
@@ -5871,7 +5871,7 @@ void CGameHandler::runBattle()
 			if (next->hasBonusOfType(Bonus::ATTACKS_NEAREST_CREATURE)) //while in berserk
 			{
 				logGlobal->trace("Handle Berserk effect");
-				std::pair<const IStackState *, BattleHex> attackInfo = curB.getNearestStack(next);
+				std::pair<const battle::Unit *, BattleHex> attackInfo = curB.getNearestStack(next);
 				if (attackInfo.first != nullptr)
 				{
 					BattleAction attack;

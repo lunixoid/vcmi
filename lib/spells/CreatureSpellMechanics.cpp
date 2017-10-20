@@ -42,7 +42,7 @@ void AcidBreathDamageMechanics::applyBattleEffects(const SpellCastEnvironment * 
 	}
 }
 
-bool AcidBreathDamageMechanics::isImmuneByStack(const IStackState * obj) const
+bool AcidBreathDamageMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
 	//just in case
 	if(!obj->alive())
@@ -56,7 +56,7 @@ bool AcidBreathDamageMechanics::isImmuneByStack(const IStackState * obj) const
 		//SPELL_IMMUNITY absolute case
 		std::stringstream cachingStr;
 		cachingStr << "type_" << Bonus::SPELL_IMMUNITY << "subtype_" << getSpellIndex() << "addInfo_1";
-		if(obj->unitAsBearer()->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, getSpellIndex(), 1), cachingStr.str()))
+		if(obj->hasBonus(Selector::typeSubtypeInfo(Bonus::SPELL_IMMUNITY, getSpellIndex(), 1), cachingStr.str()))
 			return true;
 	}
 	return false;
@@ -122,9 +122,9 @@ void DispellHelpfulMechanics::applyBattleEffects(const SpellCastEnvironment * en
 	doDispell(env, ctx, positiveSpellEffects);
 }
 
-bool DispellHelpfulMechanics::isImmuneByStack(const IStackState * obj) const
+bool DispellHelpfulMechanics::isImmuneByStack(const battle::Unit * obj) const
 {
-	if(!canDispell(obj->unitAsBearer(), positiveSpellEffects, "DispellHelpfulMechanics::positiveSpellEffects"))
+	if(!canDispell(obj, positiveSpellEffects, "DispellHelpfulMechanics::positiveSpellEffects"))
 		return true;
 
 	//use default algorithm only if there is no mechanics-related problem

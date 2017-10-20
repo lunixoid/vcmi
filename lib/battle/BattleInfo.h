@@ -133,6 +133,6 @@ class DLL_LINKAGE CMP_stack
 	int turn;
 public:
 
-	bool operator ()(const IStackState * a, const IStackState * b);
+	bool operator ()(const battle::Unit * a, const battle::Unit * b);
 	CMP_stack(int Phase = 1, int Turn = 0);
 };

@@ -23,7 +23,10 @@ class CToggleGroup;
 class CLabel;
 struct BattleResult;
 class CStack;
-class IStackState;
+namespace battle
+{
+	class Unit;
+}
 class CAnimImage;
 class CPlayerInterface;
 
@@ -145,7 +148,7 @@ class CStackQueue : public CIntObject
 		CLabel * amount;
 		CAnimImage * stateIcon;
 
-		void setStack(const IStackState * nStack, size_t turn = 0);
+		void setStack(const battle::Unit * nStack, size_t turn = 0);
 		StackBox(CStackQueue * owner);
 	};
 

@@ -14,7 +14,7 @@
 
 class HypotheticBattle;
 
-class StackWithBonuses : public IBonusBearer, public IUnitBonus
+class StackWithBonuses : public IBonusBearer, public IUnitEnvironment
 {
 public:
 	CStackState state;
@@ -24,12 +24,12 @@ public:
 	std::set<std::shared_ptr<Bonus>> bonusesToRemove;
 
 	StackWithBonuses(const CStackState * Stack);
+	virtual ~StackWithBonuses();
 
 	///IBonusBearer
 	const TBonusListPtr getAllBonuses(const CSelector & selector, const CSelector & limit,
 		const CBonusSystemNode * root = nullptr, const std::string & cachingStr = "") const override;
 
-	const IBonusBearer * unitAsBearer() const override;
 	bool unitHasAmmoCart() const override;
 
 	void addUnitBonus(const std::vector<Bonus> & bonus);

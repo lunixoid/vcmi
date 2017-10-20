@@ -16,11 +16,15 @@
 
 
 class CSpell;
-class IStackState;
 class CStack;
 class PlayerColor;
 struct MetaString;
 struct CPackForClient;
+
+namespace battle
+{
+	class Unit;
+}
 
 namespace spells
 {
@@ -87,7 +91,7 @@ public:
 	virtual int getEffectLevel(const Mode mode, const CSpell * spell) const = 0;
 
 	///applying sorcery secondary skill etc
-	virtual ui32 getSpellBonus(const CSpell * spell, ui32 base, const IStackState * affectedStack) const = 0;
+	virtual ui32 getSpellBonus(const CSpell * spell, ui32 base, const battle::Unit * affectedStack) const = 0;
 
 	///only bonus for particular spell
 	virtual ui32 getSpecificSpellBonus(const CSpell * spell, ui32 base) const = 0;

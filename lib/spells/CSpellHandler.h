@@ -28,7 +28,6 @@ class CSpell;
 class IAdventureSpellMechanics;
 class CLegacyConfigParser;
 class CGHeroInstance;
-class IStackState;
 class CStack;
 class CBattleInfoCallback;
 class BattleInfo;
@@ -385,7 +384,7 @@ public:
 
 public://internal, for use only by Mechanics classes
 	///applies caster`s secondary skills and affectedCreature`s to raw damage
-	int adjustRawDamage(const spells::Caster * caster, const IStackState * affectedCreature, int rawDamage) const;
+	int adjustRawDamage(const spells::Caster * caster, const battle::Unit * affectedCreature, int rawDamage) const;
 
 	///returns raw damage or healed HP
 	int calculateRawEffectValue(int effectLevel, int basePowerMultiplier, int levelPowerMultiplier) const;

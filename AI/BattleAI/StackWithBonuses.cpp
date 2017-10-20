@@ -24,11 +24,14 @@ void actualizeEffect(TBonusListPtr target, const Bonus & ef)
 }
 
 StackWithBonuses::StackWithBonuses(const CStackState * Stack)
-	: state(Stack->getUnitInfo(), this),
-	origBearer(Stack->unitAsBearer())
+	: state(Stack->getUnitInfo(), this, this),
+	origBearer(Stack)
 {
 	state = *Stack;
 }
+
+StackWithBonuses::~StackWithBonuses() = default;
+
 
 const TBonusListPtr StackWithBonuses::getAllBonuses(const CSelector & selector, const CSelector & limit,
 	const CBonusSystemNode * root, const std::string & cachingStr) const
@@ -66,11 +69,6 @@ const TBonusListPtr StackWithBonuses::getAllBonuses(const CSelector & selector, 
 	}
 	//TODO limiters?
 	return ret;
-}
-
-const IBonusBearer * StackWithBonuses::unitAsBearer() const
-{
-	return this;
 }
 
 bool StackWithBonuses::unitHasAmmoCart() const

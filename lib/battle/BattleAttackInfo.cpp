@@ -11,7 +11,7 @@
 #include "BattleAttackInfo.h"
 
 
-BattleAttackInfo::BattleAttackInfo(const IStackState * Attacker, const IStackState * Defender, bool Shooting)
+BattleAttackInfo::BattleAttackInfo(const battle::Unit * Attacker, const battle::Unit * Defender, bool Shooting)
 	: attacker(Attacker->asquire()),
 	defender(Defender->asquire())
 {
