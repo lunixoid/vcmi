@@ -401,6 +401,8 @@
 		<Unit filename="spells/effects/EffectsFwd.h" />
 		<Unit filename="spells/effects/GlobalEffect.cpp" />
 		<Unit filename="spells/effects/GlobalEffect.h" />
+		<Unit filename="spells/effects/Heal.cpp" />
+		<Unit filename="spells/effects/Heal.h" />
 		<Unit filename="spells/effects/LocationEffect.cpp" />
 		<Unit filename="spells/effects/LocationEffect.h" />
 		<Unit filename="spells/effects/Registry.cpp" />

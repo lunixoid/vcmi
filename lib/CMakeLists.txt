@@ -108,6 +108,7 @@ set(lib_SRCS
 		spells/effects/Effect.cpp
 		spells/effects/Effects.cpp
 		spells/effects/GlobalEffect.cpp
+		spells/effects/Heal.cpp
 		spells/effects/LocationEffect.cpp
 		spells/effects/Registry.cpp
 		spells/effects/StackEffect.cpp
@@ -261,6 +262,7 @@ set(lib_HEADERS
 		spells/effects/Effects.h
 		spells/effects/EffectsFwd.h
 		spells/effects/GlobalEffect.h
+		spells/effects/Heal.h
 		spells/effects/LocationEffect.h
 		spells/effects/Registry.h
 		spells/effects/StackEffect.h
