@@ -196,6 +196,8 @@ public:
 
 	virtual std::string getDescription() const;
 	std::vector<BattleHex> getSurroundingHexes(BattleHex assumedPosition = BattleHex::INVALID) const; // get six or 8 surrounding hexes depending on creature size
+
+	bool coversPos(BattleHex position) const; //checks also if unit is double-wide
 };
 
 }
@@ -345,7 +347,7 @@ public:
 	std::vector<BattleHex> getHexes() const; //up to two occupied hexes, starting from front
 	std::vector<BattleHex> getHexes(BattleHex assumedPos) const; //up to two occupied hexes, starting from front
 	static std::vector<BattleHex> getHexes(BattleHex assumedPos, bool twoHex, ui8 side); //up to two occupied hexes, starting from front
-	bool coversPos(BattleHex position) const; //checks also if unit is double-wide
+
 
 
 	BattleHex::EDir destShiftDir() const;

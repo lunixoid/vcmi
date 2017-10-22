@@ -138,12 +138,12 @@ SpellCastContext::SpellCastContext(const Mechanics * mechanics_, const SpellCast
 	if(mechanics->cb->battleHasHero(otherSide))
 		otherHero = mechanics->cb->battleGetFightingHero(otherSide);
 
-	logGlobal->debug("Started spell cast. Spell: %s; mode: %d", mechanics->owner->name, static_cast<int>(parameters.mode));
+	logGlobal->debug("Started spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(parameters.mode));
 }
 
 SpellCastContext::~SpellCastContext()
 {
-	logGlobal->debug("Finished spell cast. Spell: %s; mode: %d", mechanics->owner->name, static_cast<int>(parameters.mode));
+	logGlobal->debug("Finished spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(parameters.mode));
 }
 
 void SpellCastContext::addDamageToDisplay(const si32 value)
@@ -247,9 +247,9 @@ void DefaultSpellMechanics::applyEffects(const SpellCastEnvironment * env, const
 
 	for(const Destination & dest : parameters.target)
 	{
-		if(dest.stackValue)
+		if(dest.unitValue)
 		{
-			if(!isImmuneByStack(dest.stackValue))
+			if(!isImmuneByStack(dest.unitValue))
 				targets.push_back(dest);
 		}
 		else
@@ -271,8 +271,8 @@ void DefaultSpellMechanics::applyEffectsForced(const SpellCastEnvironment * env,
 	std::vector<const battle::Unit *> stacks;
 	for(auto & dest : targets)
 	{
-		if(dest.stackValue)
-			stacks.push_back(dest.stackValue);
+		if(dest.unitValue)
+			stacks.push_back(dest.unitValue);
 	}
 
 	if(owner->isDamageSpell())

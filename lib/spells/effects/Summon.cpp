@@ -47,7 +47,7 @@ bool Summon::applicable(Problem & problem, const Mechanics * m) const
 		//should not even try to do it
 		MetaString text;
 		text.addReplacement("Invalid spell cast attempt: spell %s, mode %d");
-		text.addReplacement(m->owner->name);
+		text.addReplacement(MetaString::SPELL_NAME, m->getSpellIndex());
 		text.addReplacement2(int(mode));
 		problem.add(std::move(text), Problem::CRITICAL);
 		return false;

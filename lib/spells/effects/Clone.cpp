@@ -38,7 +38,7 @@ void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, c
 {
 	for(const Destination & dest : target)
 	{
-		const battle::Unit * clonedStack = dest.stackValue;
+		const battle::Unit * clonedStack = dest.unitValue;
 
 		//we shall have all targets to be stacks
 		if(!clonedStack)

@@ -32,7 +32,7 @@ EffectTarget GlobalEffect::filterTarget(const Mechanics * m, const BattleCast & 
 	vstd::copy_if(target, std::back_inserter(res), [](const Destination & d)
 	{
 		//we can apply only to default target, but not only once
-		return !d.stackValue && (d.hexValue == BattleHex::INVALID);
+		return !d.unitValue && (d.hexValue == BattleHex::INVALID);
 	});
 	return res;
 }

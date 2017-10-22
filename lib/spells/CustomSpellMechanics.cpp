@@ -86,10 +86,10 @@ std::vector<const CStack *> CustomSpellMechanics::getAffectedStacks(int spellLvl
 
 	for(const Destination & dest : all)
 	{
-		if(dest.stackValue)
+		if(dest.unitValue)
 		{
 			//FIXME: remove and return battle::Unit
-			stacks.insert(cb->battleGetStackByID(dest.stackValue->unitId(), false));
+			stacks.insert(cb->battleGetStackByID(dest.unitValue->unitId(), false));
 		}
 	}
 
@@ -160,9 +160,9 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 	{
 		vstd::erase_if(p.second, [&](const Destination & d)
 		{
-			if(!d.stackValue)
+			if(!d.unitValue)
 				return false;
-			return vstd::contains(resisted, d.stackValue) || vstd::contains(reflected, d.stackValue);
+			return vstd::contains(resisted, d.unitValue) || vstd::contains(reflected, d.unitValue);
 		});
 	}
 
@@ -223,8 +223,8 @@ std::set<const battle::Unit *> CustomSpellMechanics::collectTargets(const effect
 	for(const auto & p : from)
 	{
 		for(const Destination & d : p.second)
-			if(d.stackValue)
-				result.insert(d.stackValue);
+			if(d.unitValue)
+				result.insert(d.unitValue);
 	}
 
 	return result;

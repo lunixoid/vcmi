@@ -427,6 +427,11 @@ std::vector<BattleHex> Unit::getSurroundingHexes(BattleHex assumedPosition) cons
 	}
 }
 
+bool Unit::coversPos(BattleHex pos) const
+{
+	return vstd::contains(CStack::getHexes(getPosition(), doubleWide(), unitSide()), pos);
+}
+
 }//namespace battle
 
 ///CStackState
@@ -992,11 +997,6 @@ std::vector<BattleHex> CStack::getHexes(BattleHex assumedPos, bool twoHex, ui8 s
 	}
 
 	return hexes;
-}
-
-bool CStack::coversPos(BattleHex pos) const
-{
-	return vstd::contains(getHexes(), pos);
 }
 
 BattleHex::EDir CStack::destShiftDir() const

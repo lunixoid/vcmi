@@ -855,7 +855,7 @@ void SacrificeMechanics::applyBattleEffects(const SpellCastEnvironment * env, co
 	const battle::Unit * victim = nullptr;
 	if(parameters.target.size() == 2)
 	{
-		victim = parameters.target[1].stackValue;
+		victim = parameters.target[1].unitValue;
 	}
 
 	if(nullptr == victim)
@@ -877,7 +877,7 @@ int SacrificeMechanics::calculateHealedHP(const SpellCastEnvironment * env, cons
 
 	if(parameters.target.size() == 2)
 	{
-		victim = parameters.target[1].stackValue;
+		victim = parameters.target[1].unitValue;
 	}
 
 	if(nullptr == victim)

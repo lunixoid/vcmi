@@ -64,8 +64,8 @@ bool StackEffect::applicable(Problem & problem, const Mechanics * m, const Targe
 	//assume target correctly transformed, just reapply smart filter
 
 	for(auto & item : target)
-		if(item.stackValue)
-			if(getStackFilter(m, true, item.stackValue))
+		if(item.unitValue)
+			if(getStackFilter(m, true, item.unitValue))
 				return true;
 
 
@@ -87,11 +87,11 @@ EffectTarget StackEffect::filterTarget(const Mechanics * m, const BattleCast & p
 	EffectTarget res;
 	vstd::copy_if(target, std::back_inserter(res), [this, m](const Destination & d)
 	{
-		if(!d.stackValue)
+		if(!d.unitValue)
 			return false;
-		if(!isValidTarget(m, d.stackValue))
+		if(!isValidTarget(m, d.unitValue))
 			return false;
-		if(!isReceptive(m, d.stackValue))
+		if(!isReceptive(m, d.unitValue))
 			return false;
 		return true;
 	});
@@ -101,8 +101,6 @@ EffectTarget StackEffect::filterTarget(const Mechanics * m, const BattleCast & p
 EffectTarget StackEffect::transformTarget(const Mechanics * m, const Target & aimPoint, const Target & spellTarget) const
 {
 	auto mainFilter = std::bind(&StackEffect::getStackFilter, this, m, false, _1);
-
-	const CSpell::TargetInfo targetInfo(m->owner, spellLevel, m->mode);
 
 	Target spellTargetCopy(spellTarget);
 
@@ -116,7 +114,7 @@ EffectTarget StackEffect::transformTarget(const Mechanics * m, const Target & ai
 
 	std::set<const battle::Unit *> targets;
 
-	if(targetInfo.massive)
+	if(m->isMassive(spellLevel))
 	{
 		//ignore spellTarget and add all stacks
 		auto stacks = m->cb->battleGetUnitsIf(mainFilter);
@@ -128,34 +126,34 @@ EffectTarget StackEffect::transformTarget(const Mechanics * m, const Target & ai
 		//process each tile
 		for(const Destination & dest : spellTargetCopy)
 		{
-			if(dest.stackValue)
+			if(dest.unitValue)
 			{
-				if(mainFilter(dest.stackValue))
-					targets.insert(dest.stackValue);
+				if(mainFilter(dest.unitValue))
+					targets.insert(dest.unitValue);
 			}
 			else if(dest.hexValue.isValid())
 			{
-				//select one stack on tile, prefer alive one
-				const CStack * targetOnTile = nullptr;
+				//select one unit on tile, prefer alive one
+				const battle::Unit * targetOnTile = nullptr;
 
-				auto predicate = [&](const CStack * s)
+				auto predicate = [&](const battle::Unit * unit)
 				{
-					return s->coversPos(dest.hexValue) && mainFilter(s);
+					return unit->coversPos(dest.hexValue) && mainFilter(unit);
 				};
 
-				TStacks stacks = m->cb->battleGetStacksIf(predicate);
+				auto units = m->cb->battleGetUnitsIf(predicate);
 
-				for(auto s : stacks)
+				for(auto unit : units)
 				{
-					if(s->alive())
+					if(unit->alive())
 					{
-						targetOnTile = s;
+						targetOnTile = unit;
 						break;
 					}
 				}
 
-				if(targetOnTile == nullptr && !stacks.empty())
-					targetOnTile = stacks.front();
+				if(targetOnTile == nullptr && !units.empty())
+					targetOnTile = units.front();
 
 				if(targetOnTile)
 					targets.insert(targetOnTile);
@@ -173,8 +171,8 @@ EffectTarget StackEffect::transformTarget(const Mechanics * m, const Target & ai
 
 	if(m->mode == Mode::SPELL_LIKE_ATTACK)
 	{
-		if(!aimPoint.empty() && aimPoint.front().stackValue)
-			targets.insert(aimPoint.front().stackValue);
+		if(!aimPoint.empty() && aimPoint.front().unitValue)
+			targets.insert(aimPoint.front().unitValue);
 		else
 			logGlobal->error("Spell-like attack with no primary target.");
 	}
@@ -202,10 +200,9 @@ bool StackEffect::isReceptive(const Mechanics * m, const battle::Unit * s) const
 
 bool StackEffect::isSmartTarget(const Mechanics * m, const battle::Unit * s, bool alwaysSmart) const
 {
-	const CSpell::TargetInfo targetInfo(m->owner, spellLevel, m->mode);
-	const bool smart = targetInfo.smart || alwaysSmart;
-	const bool ownerMatches = m->cb->battleMatchOwner(m->caster->getOwner(), s, m->owner->getPositiveness());
-	return (!smart) || ownerMatches;
+	const bool smart = m->isSmart(spellLevel) || alwaysSmart;
+	const bool ignoreOwner = !smart;
+	return ignoreOwner || m->ownerMatches(s);
 }
 
 

@@ -39,7 +39,7 @@ bool Teleport::applicable(Problem & problem, const Mechanics * m) const
 	auto mode = m->mode;
 	if(mode == Mode::AFTER_ATTACK || mode == Mode::BEFORE_ATTACK || mode == Mode::SPELL_LIKE_ATTACK || mode == Mode::MAGIC_MIRROR)
 	{
-		logGlobal->warn("Invalid spell cast attempt: spell %s, mode %d", m->owner->name, (int)mode); //should not even try to do it
+		logGlobal->warn("Invalid spell cast attempt: spell %s, mode %d", m->getSpellName(), (int)mode); //should not even try to do it
 		return m->adaptProblem(ESpellCastProblem::INVALID, problem);
 	}
 	return StackEffect::applicable(problem, m);
@@ -58,7 +58,7 @@ void Teleport::apply(const PacketSender * server, RNG & rng, const Mechanics * m
 		}
 
 		//second destination creature to move
-		auto targetUnit = target[1].stackValue;
+		auto targetUnit = target[1].unitValue;
 		if(nullptr == targetUnit)
 		{
 			server->complain("No unit to teleport");

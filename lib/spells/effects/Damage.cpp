@@ -46,7 +46,7 @@ void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, 
 
 	for(auto & t : target)
 	{
-		auto s = m->cb->battleGetStackByID(t.stackValue->unitId());
+		auto s = m->cb->battleGetStackByID(t.unitValue->unitId());
 		if(s && s->alive())
 		{
 			BattleStackAttacked bsa;
@@ -109,7 +109,7 @@ void Damage::apply(IBattleState * battleState, const Mechanics * m, const Battle
 
 	for(auto & t : target)
 	{
-		const battle::Unit * unit = t.stackValue;
+		const battle::Unit * unit = t.unitValue;
 		if(unit && unit->alive())
 		{
 			int32_t amount = m->owner->adjustRawDamage(m->caster, unit, rawDamage);

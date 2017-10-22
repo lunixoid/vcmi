@@ -218,28 +218,28 @@ public:
 };
 
 Destination::Destination()
-	: stackValue(nullptr),
+	: unitValue(nullptr),
 	hexValue(BattleHex::INVALID)
 {
 
 }
 
 Destination::Destination(const battle::Unit * destination)
-	: stackValue(destination),
+	: unitValue(destination),
 	hexValue(destination->getPosition())
 {
 
 }
 
 Destination::Destination(const BattleHex & destination)
-	: stackValue(nullptr),
+	: unitValue(nullptr),
 	hexValue(destination)
 {
 
 }
 
 Destination::Destination(const Destination & other)
-	: stackValue(other.stackValue),
+	: unitValue(other.unitValue),
 	hexValue(other.hexValue)
 {
 
@@ -247,7 +247,7 @@ Destination::Destination(const Destination & other)
 
 Destination & Destination::operator=(const Destination & other)
 {
-	stackValue = other.stackValue;
+	unitValue = other.unitValue;
 	hexValue = other.hexValue;
 	return *this;
 }
@@ -601,6 +601,28 @@ int32_t BaseMechanics::getSpellIndex() const
 SpellID BaseMechanics::getSpellId() const
 {
 	return owner->id;
+}
+
+std::string BaseMechanics::getSpellName() const
+{
+	return owner->name;
+}
+
+bool BaseMechanics::isSmart(const int level) const
+{
+	const CSpell::TargetInfo targetInfo(owner, level, mode);
+	return targetInfo.smart;
+}
+
+bool BaseMechanics::isMassive(const int level) const
+{
+	const CSpell::TargetInfo targetInfo(owner, level, mode);
+	return targetInfo.massive;
+}
+
+bool BaseMechanics::ownerMatches(const battle::Unit * unit) const
+{
+    return cb->battleMatchOwner(caster->getOwner(), unit, owner->getPositiveness());
 }
 
 

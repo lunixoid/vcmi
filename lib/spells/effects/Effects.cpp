@@ -37,9 +37,15 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 	//require all not optional effects to be applicable
 
 	bool res = true;
-	auto callback = [&res, &problem, m](const Effect * e, bool & stop)
+	bool res2 = false;
+
+	auto callback = [&res, &res2, &problem, m](const Effect * e, bool & stop)
 	{
-		if(!e->optional && !e->applicable(problem, m))
+		if(e->applicable(problem, m))
+		{
+			res2 = true;
+		}
+		else if(!e->optional)
 		{
 			res = false;
 			stop = true;
@@ -48,7 +54,7 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 
 	forEachEffect(level, callback);
 
-	return res;
+	return res && res2;
 }
 
 bool Effects::applicable(Problem & problem, const Mechanics * m, const int level, const Target & aimPoint, const Target & spellTarget) const
@@ -57,11 +63,16 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 	//require all not optional effects to be applicable
 
 	bool res = true;
-	auto callback = [&res, &problem, &aimPoint, &spellTarget, m](const Effect * e, bool & stop)
+	bool res2 = false;
+	auto callback = [&res, &res2, &problem, &aimPoint, &spellTarget, m](const Effect * e, bool & stop)
 	{
 		EffectTarget target = e->transformTarget(m, aimPoint, spellTarget);
 
-		if(!e->optional && !e->applicable(problem, m, aimPoint, target))
+		if(e->applicable(problem, m, aimPoint, target))
+		{
+			res2 = true;
+		}
+		else if(!e->optional)
 		{
 			res = false;
 			stop = true;
@@ -70,7 +81,7 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 
 	forEachEffect(level, callback);
 
-	return res;
+	return res && res2;
 }
 
 void Effects::forEachEffect(const int level, const std::function<void(const Effect *, bool &)> & callback) const

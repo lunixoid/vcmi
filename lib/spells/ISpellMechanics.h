@@ -54,7 +54,7 @@ public:
 
 	Destination & operator=(const Destination & other);
 
-	const battle::Unit * stackValue;
+	const battle::Unit * unitValue;
 	BattleHex hexValue;
 };
 
@@ -162,8 +162,16 @@ public:
 
 	bool counteringSelector(const Bonus * bonus) const;
 
+	//Spell facade
 	virtual int32_t getSpellIndex() const = 0;
 	virtual SpellID getSpellId() const = 0;
+	virtual std::string getSpellName() const = 0;
+
+	virtual bool isSmart(const int level) const = 0;
+	virtual bool isMassive(const int level) const = 0;
+
+	//Battle facade
+	virtual bool ownerMatches(const battle::Unit * unit) const = 0;
 
 	Mode mode;
 	const CSpell * owner;
@@ -189,6 +197,12 @@ public:
 
 	int32_t getSpellIndex() const override;
 	SpellID getSpellId() const override;
+	std::string getSpellName() const override;
+
+	bool isSmart(const int level) const override;
+	bool isMassive(const int level) const override;
+
+	bool ownerMatches(const battle::Unit * unit) const override;
 };
 
 }// namespace spells
