@@ -1580,7 +1580,6 @@ struct BattleSpellCast : public CPackForClient
 	BattleSpellCast()
 	{
 		side = 0;
-		skill = 0;
 		manaGained = 0;
 		casterStack = -1;
 		castByHero = true;
@@ -1592,7 +1591,6 @@ struct BattleSpellCast : public CPackForClient
 	bool activeCast;
 	ui8 side; //which hero did cast spell: 0 - attacker, 1 - defender
 	SpellID spellID; //id of spell
-	ui8 skill; //caster's skill level
 	ui8 manaGained; //mana channeling ability
 	BattleHex tile; //destination tile (may not be set in some global/mass spells
 	std::vector<CustomEffectInfo> customEffects;
@@ -1605,7 +1603,6 @@ struct BattleSpellCast : public CPackForClient
 	{
 		h & side;
 		h & spellID;
-		h & skill;
 		h & manaGained;
 		h & tile;
 		h & customEffects;

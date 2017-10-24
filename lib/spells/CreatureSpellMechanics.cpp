@@ -27,14 +27,14 @@ AcidBreathDamageMechanics::AcidBreathDamageMechanics(const IBattleCast * event):
 void AcidBreathDamageMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
 	//todo: this should be effectValue
-	ctx.setDamageToDisplay(parameters.effectPower);
+	ctx.setDamageToDisplay(getEffectPower());
 
 	for(auto & attackedCre : ctx.attackedCres)
 	{
 		BattleStackAttacked bsa;
 		bsa.flags |= BattleStackAttacked::SPELL_EFFECT;
 		bsa.spellID = getSpellId();
-		bsa.damageAmount = parameters.effectPower; //damage times the number of attackers
+		bsa.damageAmount = getEffectPower(); //damage times the number of attackers
 		bsa.stackAttacked = (attackedCre)->ID;
 		bsa.attackerID = -1;
 		(attackedCre)->prepareAttacked(bsa, env->getRandomGenerator());
@@ -71,7 +71,7 @@ DeathStareMechanics::DeathStareMechanics(const IBattleCast * event)
 void DeathStareMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
 	//calculating dmg to display
-	si32 damageToDisplay = parameters.effectPower;
+	si32 damageToDisplay = getEffectPower();
 
 	if(!ctx.attackedCres.empty())
 		vstd::amin(damageToDisplay, (*ctx.attackedCres.begin())->getCount()); //stack is already reduced after attack
@@ -83,10 +83,10 @@ void DeathStareMechanics::applyBattleEffects(const SpellCastEnvironment * env, c
 		BattleStackAttacked bsa;
 		bsa.flags |= BattleStackAttacked::SPELL_EFFECT;
 		bsa.spellID = getSpellId();
-		bsa.damageAmount = parameters.effectPower * (attackedCre)->MaxHealth();//todo: move here all DeathStare calculation
-		bsa.stackAttacked = (attackedCre)->ID;
+		bsa.damageAmount = getEffectPower() * attackedCre->MaxHealth();//todo: move here all DeathStare calculation
+		bsa.stackAttacked = attackedCre->ID;
 		bsa.attackerID = -1;
-		(attackedCre)->prepareAttacked(bsa, env->getRandomGenerator());
+		attackedCre->prepareAttacked(bsa, env->getRandomGenerator());
 		ctx.si.stacks.push_back(bsa);
 	}
 

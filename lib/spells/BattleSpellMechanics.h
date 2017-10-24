@@ -45,7 +45,7 @@ public:
 	ChainLightningMechanics(const IBattleCast * event);
 protected:
 	void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const override;
-	std::vector<const CStack *> calculateAffectedStacks(int spellLvl, BattleHex destination) const override;
+	std::vector<const CStack *> calculateAffectedStacks(BattleHex destination) const override;
 };
 
 class DLL_LINKAGE CureMechanics : public HealingSpellMechanics

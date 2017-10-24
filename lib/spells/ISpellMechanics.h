@@ -61,10 +61,24 @@ public:
 class DLL_LINKAGE IBattleCast
 {
 public:
+	using Value = int32_t;
+	using Value64 = int32_t;
+
+	using OptionalValue = boost::optional<Value>;
+	using OptionalValue64 = boost::optional<Value64>;
+
 	virtual const CSpell * getSpell() const = 0;
 	virtual Mode getMode() const = 0;
 	virtual const Caster * getCaster() const = 0;
 	virtual const CBattleInfoCallback * getBattle() const = 0;
+
+	virtual OptionalValue getEffectLevel() const = 0;
+	virtual OptionalValue getRangeLevel() const = 0;
+
+	virtual OptionalValue getEffectPower() const = 0;
+	virtual OptionalValue getEffectDuration() const = 0;
+
+	virtual OptionalValue64 getEffectValue() const = 0;
 };
 
 ///all parameters of particular cast event
@@ -84,6 +98,23 @@ public:
 	Mode getMode() const override;
 	const Caster * getCaster() const override;
 	const CBattleInfoCallback * getBattle() const override;
+
+	OptionalValue getEffectLevel() const override;
+	OptionalValue getRangeLevel() const override;
+
+	OptionalValue getEffectPower() const override;
+	OptionalValue getEffectDuration() const override;
+
+	OptionalValue64 getEffectValue() const override;
+
+	void setSpellLevel(Value value);
+	void setEffectLevel(Value value);
+	void setRangeLevel(Value value);
+
+	void setEffectPower(Value value);
+	void setEffectDuration(Value value);
+
+	void setEffectValue(Value64 value);
 
 	void aimToHex(const BattleHex & destination);
 	void aimToStack(const CStack * destination);
@@ -105,22 +136,21 @@ public:
 
 	BattleHex getFirstDestinationHex() const;
 
-	int getEffectValue() const;
-
 	Target target;
 
-	///spell school level
-	int spellLvl;
-	///spell school level to use for effects
-	int effectLevel;
-	///actual spell-power affecting effect values
-	int effectPower;
-	///actual spell-power affecting effect duration
-	int effectDuration;
-
 private:
+	///spell school level
+	OptionalValue spellLvl;
+
+	OptionalValue rangeLevel;
+	OptionalValue effectLevel;
+	///actual spell-power affecting effect values
+	OptionalValue effectPower;
+	///actual spell-power affecting effect duration
+	OptionalValue effectDuration;
+
 	///for Archangel-like casting
-	int effectValue;
+	OptionalValue64 effectValue;
 
 	Mode mode;
 	const CSpell * spell;
@@ -155,7 +185,7 @@ public:
 	virtual bool adaptGenericProblem(Problem & target) const = 0;
 
 	virtual std::vector<BattleHex> rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool * outDroppedHexes = nullptr) const = 0;
-	virtual std::vector<const CStack *> getAffectedStacks(int spellLvl, BattleHex destination) const = 0;
+	virtual std::vector<const CStack *> getAffectedStacks(BattleHex destination) const = 0;
 
 	virtual bool canBeCast(Problem & problem) const = 0;
 	virtual bool canBeCastAt(BattleHex destination) const = 0;
@@ -169,6 +199,16 @@ public:
 	virtual bool isReceptive(const battle::Unit * target) const = 0;
 
 	bool counteringSelector(const Bonus * bonus) const;
+
+	//Cast event facade
+
+	virtual IBattleCast::Value getEffectLevel() const = 0;
+	virtual IBattleCast::Value getRangeLevel() const = 0;
+
+	virtual IBattleCast::Value getEffectPower() const = 0;
+	virtual IBattleCast::Value getEffectDuration() const = 0;
+
+	virtual IBattleCast::Value64 getEffectValue() const = 0;
 
 	//Spell facade
 	virtual int32_t getSpellIndex() const = 0;
@@ -207,22 +247,31 @@ public:
 	SpellID getSpellId() const override;
 	std::string getSpellName() const override;
 
+	IBattleCast::Value getEffectLevel() const override;
+	IBattleCast::Value getRangeLevel() const override;
+
+	IBattleCast::Value getEffectPower() const override;
+	IBattleCast::Value getEffectDuration() const override;
+
+	IBattleCast::Value64 getEffectValue() const override;
+
 	bool isSmart(const int level) const override;
 	bool isMassive(const int level) const override;
 
 	bool ownerMatches(const battle::Unit * unit) const override;
 
 private:
-    int rangeLevel;
 
-	int effectLevel;
+    IBattleCast::Value rangeLevel;
+	IBattleCast::Value effectLevel;
+
 	///actual spell-power affecting effect values
-	int effectPower;
+	IBattleCast::Value effectPower;
 	///actual spell-power affecting effect duration
-	int effectDuration;
+	IBattleCast::Value effectDuration;
 
-	///for Archangel-like casting
-	int effectValue;
+	///raw damage/heal amount
+	IBattleCast::Value64 effectValue;
 };
 
 }// namespace spells

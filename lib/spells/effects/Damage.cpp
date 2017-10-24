@@ -40,7 +40,7 @@ void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, 
 	int64_t damageToDisplay = 0;
 	uint32_t killed = 0;
 
-	const int rawDamage = p.getEffectValue();
+	const auto rawDamage = m->getEffectValue();
 
 	const CStack * firstTarget = nullptr;
 
@@ -105,7 +105,7 @@ void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, 
 
 void Damage::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
 {
-	const int32_t rawDamage = p.getEffectValue();
+	const auto rawDamage = m->getEffectValue();
 
 	for(auto & t : target)
 	{

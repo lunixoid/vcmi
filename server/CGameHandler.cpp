@@ -4392,13 +4392,13 @@ bool CGameHandler::makeBattleAction(BattleAction &ba)
 			{
 				const CSpell * spell = SpellID(spellID).toSpell();
 				spells::BattleCast parameters(gs->curB, stack, spells::Mode::CREATURE_ACTIVE, spell);
-				parameters.spellLvl = 0;
-				if (spellcaster)
-					vstd::amax(parameters.spellLvl, spellcaster->val);
-				if (randSpellcaster)
-					vstd::amax(parameters.spellLvl, randSpellcaster->val);
-				vstd::amin(parameters.spellLvl, 3);
-				parameters.effectLevel = parameters.spellLvl;
+				int32_t spellLvl = 0;
+				if(spellcaster)
+					vstd::amax(spellLvl, spellcaster->val);
+				if(randSpellcaster)
+					vstd::amax(spellLvl, randSpellcaster->val);
+				parameters.setSpellLevel(spellLvl);
+
 				parameters.aimToHex(destination);//todo: allow multiple destinations
 				parameters.cast(spellEnv);
 			}
@@ -4549,14 +4549,13 @@ void CGameHandler::stackEnchantedTrigger(const CStack * st)
 		if(!sp)
 			continue;
 
-		const int val = bl.valOfBonuses(Selector::typeSubtype(b->type, b->subtype));
-		const int level = ((val > 3) ? (val - 3) : val);
+		const int32_t val = bl.valOfBonuses(Selector::typeSubtype(b->type, b->subtype));
+		const int32_t level = ((val > 3) ? (val - 3) : val);
 
 		spells::BattleCast battleCast(gs->curB, st, spells::Mode::PASSIVE, sp);
 		//this makes effect accumulate for at most 50 turns by default, but effect may be permanent and last till the end of battle
-		battleCast.effectDuration = 50;
-		battleCast.spellLvl = level;
-		battleCast.effectLevel = level;
+		battleCast.setEffectDuration(50);
+		battleCast.setSpellLevel(level);
 
 		if(val > 3)
 		{
@@ -4681,11 +4680,11 @@ void CGameHandler::stackTurnTrigger(const CStack *st)
 				const CSpell * spell = SpellID(spellID).toSpell();
 				bl.remove_if([&bonus](const Bonus * b)
 				{
-					return b==bonus.get();
+					return b == bonus.get();
 				});
 				spells::BattleCast parameters(gs->curB, st, spells::Mode::ENCHANTER, spell);
-				parameters.spellLvl = bonus->val;
-				parameters.effectLevel = bonus->val;//todo: recheck
+				parameters.setSpellLevel(bonus->val);
+				//todo: recheck effect level
 				if(parameters.castIfPossible(spellEnv))
 					cast = true;
 			}
@@ -5327,7 +5326,7 @@ void CGameHandler::attackCasting(const BattleAttack & bat, Bonus::BonusType atta
 				logGlobal->debug("attackCasting: all attacked creatures have been killed");
 				return;
 			}
-			int spellLevel = 0;
+			int32_t spellLevel = 0;
 			TBonusListPtr spellsByType = attacker->getBonuses(Selector::typeSubtype(attackMode, spellID));
 			for(const std::shared_ptr<Bonus> sf : *spellsByType)
 			{
@@ -5351,8 +5350,7 @@ void CGameHandler::attackCasting(const BattleAttack & bat, Bonus::BonusType atta
 			if(castMe)
 			{
 				spells::BattleCast parameters(gs->curB, attacker, mode, spell);
-				parameters.spellLvl = spellLevel;
-				parameters.effectLevel = spellLevel;
+				parameters.setSpellLevel(spellLevel);
 				parameters.aimToStack(oneOfAttacked);
 				parameters.cast(spellEnv);
 			}
@@ -5389,10 +5387,9 @@ void CGameHandler::handleAfterAttackCasting(const BattleAttack & bat)
 		const CSpell * spell = SpellID(spellID).toSpell();
 
 		spells::BattleCast parameters(gs->curB, attacker, spells::Mode::AFTER_ATTACK, spell);
-		parameters.spellLvl = 0;
-		parameters.effectLevel = 0;
+		parameters.setSpellLevel(0);
 		parameters.aimToStack(defender);
-		parameters.effectPower = power;
+		parameters.setEffectPower(power);
 		parameters.cast(spellEnv);
 	};
 
@@ -5775,9 +5772,8 @@ void CGameHandler::runBattle()
 				const CSpell * spell = SpellID(b->subtype).toSpell();
 
 				spells::BattleCast parameters(gs->curB, h, spells::Mode::PASSIVE, spell);
-				parameters.spellLvl = 3;
-				parameters.effectLevel = 3;
-				parameters.effectDuration = b->val;
+				parameters.setSpellLevel(3);
+				parameters.setEffectDuration(b->val);
 				parameters.castIfPossible(spellEnv);
 			}
 		}

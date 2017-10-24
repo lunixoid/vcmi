@@ -256,18 +256,13 @@ BattleCast::BattleCast(const CBattleInfoCallback * cb, const Caster * caster_, c
 	cb(cb),
 	caster(caster_),
 	mode(mode_),
-	spellLvl(caster->getSpellSchoolLevel(mode, spell)),
-	effectLevel(caster->getEffectLevel(mode, spell)),
-	effectPower(caster->getEffectPower(mode, spell)),
-	effectDuration(caster->getEnchantPower(mode, spell)),
-	effectValue(caster->getEffectValue(mode, spell))
+	spellLvl(),
+	effectLevel(),
+	effectPower(),
+	effectDuration(),
+	effectValue()
 {
-	vstd::abetween(spellLvl, 0, 3);
-	vstd::abetween(effectLevel, 0, 3);
 
-	vstd::amax(effectPower, 0);
-	vstd::amax(effectDuration, 0);
-	vstd::amax(effectValue, 0);
 }
 
 BattleCast::BattleCast(const BattleCast & orig, const Caster * caster_)
@@ -303,6 +298,67 @@ const Caster * BattleCast::getCaster() const
 const CBattleInfoCallback * BattleCast::getBattle() const
 {
 	return cb;
+}
+
+BattleCast::OptionalValue BattleCast::getEffectLevel() const
+{
+	if(effectLevel)
+		return effectLevel;
+	else
+		return spellLvl;
+}
+
+BattleCast::OptionalValue BattleCast::getRangeLevel() const
+{
+	if(rangeLevel)
+		return rangeLevel;
+	else
+		return spellLvl;
+}
+
+BattleCast::OptionalValue BattleCast::getEffectPower() const
+{
+	return effectPower;
+}
+
+BattleCast::OptionalValue BattleCast::getEffectDuration() const
+{
+	return effectDuration;
+}
+
+BattleCast::OptionalValue64 BattleCast::getEffectValue() const
+{
+	return effectValue;
+}
+
+void BattleCast::setSpellLevel(BattleCast::Value value)
+{
+	spellLvl = boost::make_optional(value);
+}
+
+void BattleCast::setEffectLevel(BattleCast::Value value)
+{
+	effectLevel = boost::make_optional(value);
+}
+
+void BattleCast::setRangeLevel(BattleCast::Value value)
+{
+	rangeLevel = boost::make_optional(value);
+}
+
+void BattleCast::setEffectPower(BattleCast::Value value)
+{
+	effectPower = boost::make_optional(value);
+}
+
+void BattleCast::setEffectDuration(BattleCast::Value value)
+{
+	effectDuration = boost::make_optional(value);
+}
+
+void BattleCast::setEffectValue(BattleCast::Value64 value)
+{
+	effectValue = boost::make_optional(value);
 }
 
 void BattleCast::aimToHex(const BattleHex & destination)
@@ -407,10 +463,10 @@ BattleHex BattleCast::getFirstDestinationHex() const
 	return target.at(0).hexValue;
 }
 
-int BattleCast::getEffectValue() const
-{
-	return (effectValue == 0) ? spell->calculateRawEffectValue(effectLevel, effectPower, 1) : effectValue;
-}
+//int BattleCast::getEffectValue() const
+//{
+//	return (effectValue == 0) ? spell->calculateRawEffectValue(effectLevel, effectPower, 1) : effectValue;
+//}
 
 ///ISpellMechanicsFactory
 ISpellMechanicsFactory::ISpellMechanicsFactory(const CSpell * s)
@@ -536,7 +592,54 @@ bool Mechanics::counteringSelector(const Bonus * bonus) const
 BaseMechanics::BaseMechanics(const IBattleCast * event)
 	: Mechanics(event)
 {
-
+	{
+		auto value = event->getRangeLevel();
+		if(value)
+			rangeLevel = value.get();
+		else
+			rangeLevel = caster->getSpellSchoolLevel(mode, owner);
+		vstd::abetween(rangeLevel, 0, 3);
+	}
+	{
+		auto value = event->getEffectLevel();
+        if(value)
+			effectLevel = value.get();
+		else
+			effectLevel = caster->getEffectLevel(mode, owner);
+		vstd::abetween(effectLevel, 0, 3);
+	}
+	{
+		auto value = event->getEffectPower();
+		if(value)
+			effectPower = value.get();
+		else
+			effectPower = caster->getEffectPower(mode, owner);
+		vstd::amax(effectPower, 0);
+	}
+	{
+		auto value = event->getEffectDuration();
+		if(value)
+			effectDuration = value.get();
+		else
+			effectDuration = caster->getEnchantPower(mode, owner);
+		vstd::amax(effectDuration, 0); //???
+	}
+	{
+		auto value = event->getEffectValue();
+		if(value)
+		{
+			effectValue = value.get();
+		}
+		else
+		{
+			auto casterValue = caster->getEffectValue(mode, owner);
+			if(casterValue == 0)
+				effectValue = owner->calculateRawEffectValue(effectLevel, effectPower, 1);
+			else
+				effectValue = casterValue;
+		}
+		vstd::amax(effectValue, 0);
+	}
 }
 
 BaseMechanics::~BaseMechanics() = default;
@@ -644,6 +747,31 @@ bool BaseMechanics::isMassive(const int level) const
 bool BaseMechanics::ownerMatches(const battle::Unit * unit) const
 {
     return cb->battleMatchOwner(caster->getOwner(), unit, owner->getPositiveness());
+}
+
+IBattleCast::Value BaseMechanics::getEffectLevel() const
+{
+	return effectLevel;
+}
+
+IBattleCast::Value BaseMechanics::getRangeLevel() const
+{
+	return rangeLevel;
+}
+
+IBattleCast::Value BaseMechanics::getEffectPower() const
+{
+	return effectPower;
+}
+
+IBattleCast::Value BaseMechanics::getEffectDuration() const
+{
+	return effectDuration;
+}
+
+IBattleCast::Value64 BaseMechanics::getEffectValue() const
+{
+	return effectValue;
 }
 
 

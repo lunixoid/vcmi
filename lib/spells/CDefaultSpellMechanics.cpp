@@ -126,7 +126,6 @@ SpellCastContext::SpellCastContext(const Mechanics * mechanics_, const SpellCast
 {
 	sc.side = mechanics->casterSide;
 	sc.spellID = mechanics->getSpellId();
-	sc.skill = parameters.spellLvl;
 	sc.tile = parameters.getFirstDestinationHex();
 	sc.castByHero = mechanics->mode == Mode::HERO;
 	sc.casterStack = (mechanics->casterStack ? mechanics->casterStack->ID : -1);
@@ -295,7 +294,7 @@ void DefaultSpellMechanics::applyEffectsForced(const SpellCastEnvironment * env,
 int DefaultSpellMechanics::defaultDamageEffect(const SpellCastEnvironment * env, const BattleCast & parameters, StacksInjured & si, const std::vector<const battle::Unit *> & target) const
 {
 	int totalDamage = 0;
-	const int rawDamage = parameters.getEffectValue();
+	const auto rawDamage = getEffectValue();
 	for(const battle::Unit * affected : target)
 	{
 		BattleStackAttacked bsa;
@@ -315,17 +314,17 @@ int DefaultSpellMechanics::defaultDamageEffect(const SpellCastEnvironment * env,
 void DefaultSpellMechanics::defaultTimedEffect(const SpellCastEnvironment * env, const BattleCast & parameters, SetStackEffect & sse, const std::vector<const battle::Unit *> & target) const
 {
 	//get default spell duration (spell power with bonuses for heroes)
-	int duration = parameters.effectDuration;
+	auto duration = getEffectDuration();
 
 	std::vector<Bonus> normal;
 	std::vector<Bonus> cumulative;
 
 	//generate actual stack bonuses
 	{
-		si32 maxDuration = 0;
+		decltype(duration) maxDuration = 0;
 
-		owner->getEffects(normal, parameters.effectLevel, false, duration, &maxDuration);
-		owner->getEffects(cumulative, parameters.effectLevel, true, duration, &maxDuration);
+		owner->getEffects(normal, getEffectLevel(), false, duration, &maxDuration);
+		owner->getEffects(cumulative, getEffectLevel(), true, duration, &maxDuration);
 
 		//if all spell effects have special duration, use it later for special bonuses
 		duration = maxDuration;
@@ -674,14 +673,14 @@ void RegularSpellMechanics::applyBattleEffects(const SpellCastEnvironment * env,
 	}
 }
 
-std::vector<const CStack *> RegularSpellMechanics::calculateAffectedStacks(int spellLvl, BattleHex destination) const
+std::vector<const CStack *> RegularSpellMechanics::calculateAffectedStacks(BattleHex destination) const
 {
 	std::set<const CStack *> attackedCres;//std::set to exclude multiple occurrences of two hex creatures
-	CSpell::TargetInfo ti(owner, spellLvl, mode);
-	auto attackedHexes = rangeInHexes(destination, spellLvl);
+	CSpell::TargetInfo ti(owner, getRangeLevel(), mode);
+	auto attackedHexes = rangeInHexes(destination, getRangeLevel());
 
 	//hackfix for banned creature massive spells
-	if(!ti.massive && owner->getLevelInfo(spellLvl).range == "X")
+	if(!ti.massive && owner->getLevelInfo(getRangeLevel()).range == "X")
 		attackedHexes.push_back(destination);
 
 	auto mainFilter = [&](const CStack * s)
@@ -740,8 +739,7 @@ std::vector<const CStack *> RegularSpellMechanics::calculateAffectedStacks(int s
 
 bool RegularSpellMechanics::canBeCastAt(BattleHex destination) const
 {
-	const auto level = caster->getSpellSchoolLevel(mode, owner);
-	std::vector<const CStack *> affected = getAffectedStacks(level, destination);
+	std::vector<const CStack *> affected = getAffectedStacks(destination);
 
 	bool targetExists = false;
 
@@ -771,7 +769,7 @@ bool RegularSpellMechanics::canBeCastAt(BattleHex destination) const
 
 void RegularSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector<const CStack*> & reflected) const
 {
-	ctx.attackedCres = getAffectedStacks(parameters.spellLvl, parameters.getFirstDestinationHex());
+	ctx.attackedCres = getAffectedStacks(parameters.getFirstDestinationHex());
 
 	logGlobal->debug("will affect %d stacks", ctx.attackedCres.size());
 
@@ -785,10 +783,10 @@ void RegularSpellMechanics::cast(const SpellCastEnvironment * env, const BattleC
 	ctx.cast();
 }
 
-std::vector<const CStack *> RegularSpellMechanics::getAffectedStacks(int spellLvl, BattleHex destination) const
+std::vector<const CStack *> RegularSpellMechanics::getAffectedStacks(BattleHex destination) const
 {
-	std::vector<const CStack *> result = calculateAffectedStacks(spellLvl, destination);
-	CSpell::TargetInfo ti(owner, spellLvl, mode);
+	std::vector<const CStack *> result = calculateAffectedStacks(destination);
+	CSpell::TargetInfo ti(owner, getRangeLevel(), mode);
 
 	auto predicate = [&, this](const CStack * s)->bool
 	{
@@ -912,7 +910,7 @@ bool SpecialSpellMechanics::canBeCastAt(BattleHex destination) const
 	return true;
 }
 
-std::vector<const CStack *> SpecialSpellMechanics::getAffectedStacks(int spellLvl, BattleHex destination) const
+std::vector<const CStack *> SpecialSpellMechanics::getAffectedStacks(BattleHex destination) const
 {
 	return std::vector<const CStack *>();
 }

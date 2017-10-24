@@ -88,11 +88,11 @@ public:
 	RegularSpellMechanics(const IBattleCast * event);
 	bool canBeCastAt(BattleHex destination) const override;
 	void cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector <const CStack*> & reflected) const override;
-	std::vector<const CStack *> getAffectedStacks(int spellLvl, BattleHex destination) const override final;
+	std::vector<const CStack *> getAffectedStacks(BattleHex destination) const override final;
 
 protected:
 	virtual void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const;
-	virtual std::vector<const CStack *> calculateAffectedStacks(int spellLvl, BattleHex destination) const;
+	virtual std::vector<const CStack *> calculateAffectedStacks(BattleHex destination) const;
 private:
 	void prepareBattleLog(SpellCastContext & ctx) const;
 };
@@ -107,7 +107,7 @@ public:
 
 protected:
 	virtual void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const = 0;
-	std::vector<const CStack *> getAffectedStacks(int spellLvl, BattleHex destination) const override final;
+	std::vector<const CStack *> getAffectedStacks(BattleHex destination) const override final;
 };
 
 } //namespace spells

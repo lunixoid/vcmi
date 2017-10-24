@@ -212,7 +212,8 @@ std::vector<const CStack *> CSpell::getAffectedStacks(const CBattleInfoCallback 
 {
 	//TODO: remove and add new method to BattleCast
 	spells::BattleCast event(cb, caster, mode, this);
-	return battleMechanics(&event)->getAffectedStacks(spellLvl, destination);
+	event.setSpellLevel(spellLvl);
+	return battleMechanics(&event)->getAffectedStacks(destination);
 }
 
 CSpell::ETargetType CSpell::getTargetType() const

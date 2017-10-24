@@ -108,7 +108,7 @@ Effects::EffectsToApply Effects::prepare(const Mechanics * m, const BattleCast &
 		}
 	};
 
-	forEachEffect(p.effectLevel, callback);
+	forEachEffect(m->getEffectLevel(), callback);
 
 	return effectsToApply;
 }

@@ -35,14 +35,14 @@ public:
 	void cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector <const CStack*> & reflected) const override;
 	void cast(IBattleState * battleState, const BattleCast & parameters) const override;
 
-	std::vector<const CStack *> getAffectedStacks(int spellLvl, BattleHex destination) const override final;
+	std::vector<const CStack *> getAffectedStacks(BattleHex destination) const override final;
 
 private:
 	std::shared_ptr<effects::Effects> effects;
 
 	std::set<const battle::Unit *> collectTargets(const effects::Effects::EffectsToApply & from) const;
 
-	Target transformSpellTarget(const Target & aimPoint, const int spellLevel) const;
+	Target transformSpellTarget(const Target & aimPoint) const;
 };
 
 } //namespace spells

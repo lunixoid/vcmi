@@ -30,8 +30,8 @@ HealingSpellMechanics::HealingSpellMechanics(const IBattleCast * event)
 
 void HealingSpellMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
-	EHealLevel healLevel = getHealLevel(parameters.effectLevel);
-	EHealPower healPower = getHealPower(parameters.effectLevel);
+	EHealLevel healLevel = getHealLevel(getEffectLevel());
+	EHealPower healPower = getHealPower(getEffectLevel());
 
 	int hpGained = calculateHealedHP(env, parameters, ctx);
 	BattleStacksChanged shr;
@@ -75,7 +75,7 @@ bool HealingSpellMechanics::cureSelector(const Bonus * b)
 
 int HealingSpellMechanics::calculateHealedHP(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
-	return parameters.getEffectValue();
+	return getEffectValue();
 }
 
 ///AntimagicMechanics
@@ -117,7 +117,7 @@ ChainLightningMechanics::ChainLightningMechanics(const IBattleCast * event)
 
 void ChainLightningMechanics::applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const
 {
-	const int rawDamage = parameters.getEffectValue();
+	const auto rawDamage = getEffectValue();
 	int chainLightningModifier = 0;
 	for(auto & attackedCre : ctx.attackedCres)
 	{
@@ -134,7 +134,7 @@ void ChainLightningMechanics::applyBattleEffects(const SpellCastEnvironment * en
 	}
 }
 
-std::vector<const CStack *> ChainLightningMechanics::calculateAffectedStacks(int spellLvl, BattleHex destination) const
+std::vector<const CStack *> ChainLightningMechanics::calculateAffectedStacks(BattleHex destination) const
 {
 	std::vector<const CStack *> res;
 	std::set<BattleHex> possibleHexes;
@@ -147,7 +147,7 @@ std::vector<const CStack *> ChainLightningMechanics::calculateAffectedStacks(int
 	static const std::array<int, 4> targetsOnLevel = {4, 4, 5, 5};
 
 	BattleHex lightningHex = destination;
-	for(int i = 0; i < targetsOnLevel.at(spellLvl); ++i)
+	for(int i = 0; i < targetsOnLevel.at(getRangeLevel()); ++i)
 	{
 		auto stack = cb->battleGetStackByPos(lightningHex, true);
 		if(!stack)
@@ -244,7 +244,7 @@ void DispellMechanics::applyBattleEffects(const SpellCastEnvironment * env, cons
 {
 	doDispell(env, ctx, Selector::all);
 
-	if(parameters.spellLvl > 2)
+	if(getEffectLevel() > 2)
 	{
 		//expert DISPELL also removes spell-created obstacles
 		ObstaclesRemoved packet;
@@ -297,7 +297,7 @@ void EarthquakeMechanics::applyBattleEffects(const SpellCastEnvironment * env, c
 
 	assert(possibleTargets.size() == EWallPart::PARTS_COUNT);
 
-	const int targetsToAttack = 2 + std::max<int>(parameters.spellLvl - 1, 0);
+	const int targetsToAttack = 2 + std::max<int>(getRangeLevel() - 1, 0);
 
 	CatapultAttack ca;
 	ca.attacker = -1;
@@ -491,8 +491,8 @@ void ObstacleMechanics::placeObstacle(const SpellCastEnvironment * env, const Ba
 	obstacle->pos = pos;
 	obstacle->casterSide = casterSide;
 	obstacle->ID = getSpellIndex();
-	obstacle->spellLevel = parameters.effectLevel;
-	obstacle->casterSpellPower = parameters.effectPower;
+	obstacle->spellLevel = getEffectLevel();
+	obstacle->casterSpellPower = getEffectPower();
 	obstacle->uniqueID = obstacleIdToGive;
 	obstacle->customSize = std::vector<BattleHex>(1, pos);
 	setupObstacle(obstacle.get());
@@ -518,8 +518,8 @@ void PatchObstacleMechanics::applyBattleEffects(const SpellCastEnvironment * env
 			availableTiles.push_back(hex);
 	}
 	RandomGeneratorUtil::randomShuffle(availableTiles, env->getRandomGenerator());
-	const int patchesForSkill[] = {4, 4, 6, 8};
-	const int patchesToPut = std::min<int>(patchesForSkill[parameters.spellLvl], availableTiles.size());
+	static const std::array<int, 4> patchesForSkill = {4, 4, 6, 8};
+	const int patchesToPut = std::min<int>(patchesForSkill.at(getRangeLevel()), availableTiles.size());
 
 	//land mines or quicksand patches are handled as spell created obstacles
 	for (int i = 0; i < patchesToPut; i++)
@@ -653,7 +653,7 @@ void FireWallMechanics::applyBattleEffects(const SpellCastEnvironment * env, con
 		return;
 	}
 	//firewall is build from multiple obstacles - one fire piece for each affected hex
-	auto affectedHexes = rangeInHexes(destination, parameters.spellLvl);
+	auto affectedHexes = rangeInHexes(destination, getRangeLevel());
 	for(BattleHex hex : affectedHexes)
 		placeObstacle(env, parameters, hex);
 }
@@ -711,7 +711,7 @@ void RemoveObstacleMechanics::applyBattleEffects(const SpellCastEnvironment * en
 		bool complain = true;
 		for(auto & i : obstacleToRemove)
 		{
-			if(canRemove(i.get(), parameters.spellLvl))
+			if(canRemove(i.get(), getEffectLevel()))
 			{
 				obr.obstacles.insert(i->uniqueID);
 				complain = false;
@@ -886,7 +886,7 @@ int SacrificeMechanics::calculateHealedHP(const SpellCastEnvironment * env, cons
 		return 0;
 	}
 
-	return (parameters.effectPower + victim->unitMaxHealth() + owner->getPower(parameters.effectLevel)) * victim->getCount();
+	return (getEffectPower() + victim->unitMaxHealth() + owner->getPower(getEffectLevel())) * victim->getCount();
 }
 
 bool SacrificeMechanics::requiresCreatureTarget() const

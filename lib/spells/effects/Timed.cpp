@@ -94,7 +94,7 @@ void Timed::apply(IBattleState * battleState, const Mechanics * m, const BattleC
 void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
 {
 //get default spell duration (spell power with bonuses for heroes)
-	si32 duration = p.effectDuration;
+	int32_t duration = m->getEffectDuration();
 
 	std::vector<Bonus> converted;
     convertBonus(m, duration, converted);

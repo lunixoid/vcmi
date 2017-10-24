@@ -96,7 +96,7 @@ bool Summon::applicable(Problem & problem, const Mechanics * m) const
 void Summon::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
 {
 	//new feature - percentage bonus
-	auto amount = m->owner->calculateRawEffectValue(p.effectLevel, 0, m->caster->getSpecificSpellBonus(m->owner, p.effectPower));
+	auto amount = m->owner->calculateRawEffectValue(m->getEffectLevel(), 0, m->caster->getSpecificSpellBonus(m->owner, m->getEffectPower()));
 	if(amount < 1)
 	{
 		server->complain("Summoning didn't summon any!");

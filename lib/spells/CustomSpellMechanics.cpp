@@ -34,7 +34,7 @@ void CustomSpellMechanics::applyEffects(const SpellCastEnvironment * env, const 
 		e->apply(env, env->getRandomGenerator(), this, parameters, target);
 	};
 
-	effects->forEachEffect(parameters.spellLvl, callback);
+	effects->forEachEffect(getEffectLevel(), callback);
 }
 
 void CustomSpellMechanics::applyEffectsForced(const SpellCastEnvironment * env, const BattleCast & parameters) const
@@ -44,7 +44,7 @@ void CustomSpellMechanics::applyEffectsForced(const SpellCastEnvironment * env, 
 		e->apply(env, env->getRandomGenerator(), this, parameters, parameters.target);
 	};
 
-	effects->forEachEffect(parameters.spellLvl, callback);
+	effects->forEachEffect(getEffectLevel(), callback);
 }
 
 bool CustomSpellMechanics::canBeCast(Problem & problem) const
@@ -55,8 +55,6 @@ bool CustomSpellMechanics::canBeCast(Problem & problem) const
 
 bool CustomSpellMechanics::canBeCastAt(BattleHex destination) const
 {
-	const int level = caster->getSpellSchoolLevel(mode, owner);
-
 	detail::ProblemImpl problem;
 
 	//TODO: add support for secondary targets
@@ -64,20 +62,20 @@ bool CustomSpellMechanics::canBeCastAt(BattleHex destination) const
 	Target tmp;
 	tmp.push_back(Destination(destination));
 
-	Target spellTarget = transformSpellTarget(tmp, level);
+	Target spellTarget = transformSpellTarget(tmp);
 
-    return effects->applicable(problem, this, level, tmp, spellTarget);
+    return effects->applicable(problem, this, getEffectLevel(), tmp, spellTarget);
 }
 
-std::vector<const CStack *> CustomSpellMechanics::getAffectedStacks(int spellLvl, BattleHex destination) const
+std::vector<const CStack *> CustomSpellMechanics::getAffectedStacks(BattleHex destination) const
 {
 	Target tmp;
 	tmp.push_back(Destination(destination));
-	Target spellTarget = transformSpellTarget(tmp, spellLvl);
+	Target spellTarget = transformSpellTarget(tmp);
 
 	EffectTarget all;
 
-	effects->forEachEffect(spellLvl, [&all, &tmp, &spellTarget, this](const effects::Effect * e, bool & stop)
+	effects->forEachEffect(getEffectLevel(), [&all, &tmp, &spellTarget, this](const effects::Effect * e, bool & stop)
 	{
 		EffectTarget one = e->transformTarget(this, tmp, spellTarget);
 		vstd::concatenate(all, one);
@@ -103,7 +101,7 @@ void CustomSpellMechanics::cast(const SpellCastEnvironment * env, const BattleCa
 {
 	reflected.clear();
 
-	Target spellTarget = transformSpellTarget(parameters.target, parameters.spellLvl);
+	Target spellTarget = transformSpellTarget(parameters.target);
 
 	std::vector <const CStack *> affected;
 	std::vector <const CStack *> resisted;
@@ -193,7 +191,7 @@ void CustomSpellMechanics::cast(IBattleState * battleState, const BattleCast & p
 	//TODO: evaluate caster updates (mana usage etc.)
 	//TODO: evaluate random values
 
-	Target spellTarget = transformSpellTarget(parameters.target, parameters.spellLvl);
+	Target spellTarget = transformSpellTarget(parameters.target);
 
 	auto toApply = effects->prepare(this, parameters, spellTarget);
 
@@ -232,7 +230,7 @@ std::set<const battle::Unit *> CustomSpellMechanics::collectTargets(const effect
 }
 
 
-Target CustomSpellMechanics::transformSpellTarget(const Target & aimPoint, const int spellLevel) const
+Target CustomSpellMechanics::transformSpellTarget(const Target & aimPoint) const
 {
 	Target spellTarget;
 
@@ -249,7 +247,7 @@ Target CustomSpellMechanics::transformSpellTarget(const Target & aimPoint, const
 
 		if(aimPoint.isValid())
 		{
-			auto spellRange = rangeInHexes(aimPoint, spellLevel);
+			auto spellRange = rangeInHexes(aimPoint, getRangeLevel());
 			for(auto & hex : spellRange)
 				spellTarget.push_back(Destination(hex));
 		}
