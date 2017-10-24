@@ -19,8 +19,9 @@
 namespace spells
 {
 
-CustomSpellMechanics::CustomSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_, std::shared_ptr<effects::Effects> e)
-	: DefaultSpellMechanics(s, Cb, caster_), effects(e)
+CustomSpellMechanics::CustomSpellMechanics(const IBattleCast * event, std::shared_ptr<effects::Effects> e)
+	: DefaultSpellMechanics(event),
+	effects(e)
 {}
 
 CustomSpellMechanics::~CustomSpellMechanics() = default;

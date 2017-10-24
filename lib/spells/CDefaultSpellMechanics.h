@@ -50,7 +50,7 @@ private:
 class DLL_LINKAGE DefaultSpellMechanics : public BaseMechanics
 {
 public:
-	DefaultSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	DefaultSpellMechanics(const IBattleCast * event);
 
 	void applyEffects(const SpellCastEnvironment * env, const BattleCast & parameters) const override;
 	void applyEffectsForced(const SpellCastEnvironment * env, const BattleCast & parameters) const override;
@@ -85,7 +85,7 @@ private:
 class DLL_LINKAGE RegularSpellMechanics : public DefaultSpellMechanics
 {
 public:
-	RegularSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	RegularSpellMechanics(const IBattleCast * event);
 	bool canBeCastAt(BattleHex destination) const override;
 	void cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector <const CStack*> & reflected) const override;
 	std::vector<const CStack *> getAffectedStacks(int spellLvl, BattleHex destination) const override final;
@@ -101,7 +101,7 @@ private:
 class DLL_LINKAGE SpecialSpellMechanics : public DefaultSpellMechanics
 {
 public:
-	SpecialSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	SpecialSpellMechanics(const IBattleCast * event);
 	bool canBeCastAt(BattleHex destination) const override;
 	void cast(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx, std::vector <const CStack*> & reflected) const override;
 

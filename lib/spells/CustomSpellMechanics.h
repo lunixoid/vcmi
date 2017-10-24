@@ -21,7 +21,7 @@ namespace spells
 class CustomSpellMechanics : public DefaultSpellMechanics
 {
 public:
-	CustomSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_, std::shared_ptr<effects::Effects> e);
+	CustomSpellMechanics(const IBattleCast * event, std::shared_ptr<effects::Effects> e);
 	virtual ~CustomSpellMechanics();
 
 	void applyEffects(const SpellCastEnvironment * env, const BattleCast & parameters) const override;

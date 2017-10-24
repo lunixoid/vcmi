@@ -23,8 +23,8 @@ namespace spells
 {
 
 ///HealingSpellMechanics
-HealingSpellMechanics::HealingSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+HealingSpellMechanics::HealingSpellMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -79,8 +79,8 @@ int HealingSpellMechanics::calculateHealedHP(const SpellCastEnvironment * env, c
 }
 
 ///AntimagicMechanics
-AntimagicMechanics::AntimagicMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+AntimagicMechanics::AntimagicMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -110,8 +110,8 @@ void AntimagicMechanics::applyBattleEffects(const SpellCastEnvironment * env, co
 }
 
 ///ChainLightningMechanics
-ChainLightningMechanics::ChainLightningMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+ChainLightningMechanics::ChainLightningMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -164,8 +164,8 @@ std::vector<const CStack *> ChainLightningMechanics::calculateAffectedStacks(int
 }
 
 ///CureMechanics
-CureMechanics::CureMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: HealingSpellMechanics(s, Cb, caster_)
+CureMechanics::CureMechanics(const IBattleCast * event)
+	: HealingSpellMechanics(event)
 {
 }
 
@@ -211,8 +211,8 @@ bool CureMechanics::isImmuneByStack(const battle::Unit * obj) const
 }
 
 ///DispellMechanics
-DispellMechanics::DispellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+DispellMechanics::DispellMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -263,8 +263,8 @@ void DispellMechanics::applyBattleEffects(const SpellCastEnvironment * env, cons
 }
 
 ///EarthquakeMechanics
-EarthquakeMechanics::EarthquakeMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: SpecialSpellMechanics(s, Cb, caster_)
+EarthquakeMechanics::EarthquakeMechanics(const IBattleCast * event)
+	: SpecialSpellMechanics(event)
 {
 }
 
@@ -403,8 +403,8 @@ bool EarthquakeMechanics::requiresCreatureTarget() const
 }
 
 ///HypnotizeMechanics
-HypnotizeMechanics::HypnotizeMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+HypnotizeMechanics::HypnotizeMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -421,8 +421,8 @@ bool HypnotizeMechanics::isImmuneByStack(const battle::Unit * obj) const
 }
 
 ///ObstacleMechanics
-ObstacleMechanics::ObstacleMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: SpecialSpellMechanics(s, Cb, caster_)
+ObstacleMechanics::ObstacleMechanics(const IBattleCast * event)
+	: SpecialSpellMechanics(event)
 {
 }
 
@@ -503,8 +503,8 @@ void ObstacleMechanics::placeObstacle(const SpellCastEnvironment * env, const Ba
 }
 
 ///PatchObstacleMechanics
-PatchObstacleMechanics::PatchObstacleMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: ObstacleMechanics(s, Cb, caster_)
+PatchObstacleMechanics::PatchObstacleMechanics(const IBattleCast * event)
+	: ObstacleMechanics(event)
 {
 }
 
@@ -527,8 +527,8 @@ void PatchObstacleMechanics::applyBattleEffects(const SpellCastEnvironment * env
 }
 
 ///LandMineMechanics
-LandMineMechanics::LandMineMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: PatchObstacleMechanics(s, Cb, caster_)
+LandMineMechanics::LandMineMechanics(const IBattleCast * event)
+	: PatchObstacleMechanics(event)
 {
 }
 
@@ -573,8 +573,8 @@ void LandMineMechanics::setupObstacle(SpellCreatedObstacle * obstacle) const
 }
 
 ///QuicksandMechanics
-QuicksandMechanics::QuicksandMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: PatchObstacleMechanics(s, Cb, caster_)
+QuicksandMechanics::QuicksandMechanics(const IBattleCast * event)
+	: PatchObstacleMechanics(event)
 {
 }
 
@@ -591,8 +591,8 @@ void QuicksandMechanics::setupObstacle(SpellCreatedObstacle * obstacle) const
 }
 
 ///WallMechanics
-WallMechanics::WallMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: ObstacleMechanics(s, Cb, caster_)
+WallMechanics::WallMechanics(const IBattleCast * event)
+	: ObstacleMechanics(event)
 {
 }
 
@@ -633,8 +633,8 @@ std::vector<BattleHex> WallMechanics::rangeInHexes(BattleHex centralHex, ui8 sch
 }
 
 ///FireWallMechanics
-FireWallMechanics::FireWallMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: WallMechanics(s, Cb, caster_)
+FireWallMechanics::FireWallMechanics(const IBattleCast * event)
+	: WallMechanics(event)
 {
 }
 
@@ -666,8 +666,8 @@ void FireWallMechanics::setupObstacle(SpellCreatedObstacle * obstacle) const
 }
 
 ///ForceFieldMechanics
-ForceFieldMechanics::ForceFieldMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: WallMechanics(s, Cb, caster_)
+ForceFieldMechanics::ForceFieldMechanics(const IBattleCast * event)
+	: WallMechanics(event)
 {
 }
 
@@ -697,8 +697,8 @@ void ForceFieldMechanics::setupObstacle(SpellCreatedObstacle * obstacle) const
 }
 
 ///RemoveObstacleMechanics
-RemoveObstacleMechanics::RemoveObstacleMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: SpecialSpellMechanics(s, Cb, caster_)
+RemoveObstacleMechanics::RemoveObstacleMechanics(const IBattleCast * event)
+	: SpecialSpellMechanics(event)
 {
 }
 
@@ -787,8 +787,8 @@ bool RemoveObstacleMechanics::requiresCreatureTarget() const
 }
 
 ///RisingSpellMechanics
-RisingSpellMechanics::RisingSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: HealingSpellMechanics(s, Cb, caster_)
+RisingSpellMechanics::RisingSpellMechanics(const IBattleCast * event)
+	: HealingSpellMechanics(event)
 {
 }
 
@@ -807,8 +807,8 @@ EHealPower RisingSpellMechanics::getHealPower(int effectLevel) const
 }
 
 ///SacrificeMechanics
-SacrificeMechanics::SacrificeMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RisingSpellMechanics(s, Cb, caster_)
+SacrificeMechanics::SacrificeMechanics(const IBattleCast * event)
+	: RisingSpellMechanics(event)
 {
 }
 
@@ -895,8 +895,8 @@ bool SacrificeMechanics::requiresCreatureTarget() const
 }
 
 ///SpecialRisingSpellMechanics
-SpecialRisingSpellMechanics::SpecialRisingSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RisingSpellMechanics(s, Cb, caster_)
+SpecialRisingSpellMechanics::SpecialRisingSpellMechanics(const IBattleCast * event)
+	: RisingSpellMechanics(event)
 {
 }
 

@@ -153,7 +153,9 @@ bool CSpell::canBeCast(const CBattleInfoCallback * cb, spells::Mode mode, const 
 
 bool CSpell::canBeCast(spells::Problem & problem, const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster) const
 {
-	auto mechanics = battleMechanics(cb, mode, caster);
+	spells::BattleCast event(cb, caster, mode, this);
+	auto mechanics = battleMechanics(&event);
+
 	ESpellCastProblem::ESpellCastProblem genProblem = cb->battleCanCastSpell(caster, mode);
 	if(genProblem != ESpellCastProblem::OK)
 		return mechanics->adaptProblem(genProblem, problem);
@@ -201,13 +203,16 @@ bool CSpell::canBeCast(spells::Problem & problem, const CBattleInfoCallback * cb
 
 std::vector<BattleHex> CSpell::rangeInHexes(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster, BattleHex centralHex) const
 {
-	auto schoolLevel = caster->getSpellSchoolLevel(mode, this);
-	return battleMechanics(cb, mode, caster)->rangeInHexes(centralHex, schoolLevel);
+	auto schoolLevel = caster->getSpellSchoolLevel(mode, this);//TODO: remove
+	spells::BattleCast event(cb, caster, mode, this);
+	return battleMechanics(&event)->rangeInHexes(centralHex, schoolLevel);
 }
 
 std::vector<const CStack *> CSpell::getAffectedStacks(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster, int spellLvl, BattleHex destination) const
 {
-	return battleMechanics(cb, mode, caster)->getAffectedStacks(spellLvl, destination);
+	//TODO: remove and add new method to BattleCast
+	spells::BattleCast event(cb, caster, mode, this);
+	return battleMechanics(&event)->getAffectedStacks(spellLvl, destination);
 }
 
 CSpell::ETargetType CSpell::getTargetType() const
@@ -370,9 +375,14 @@ void CSpell::getEffects(std::vector<Bonus> & lst, const int level, const bool cu
 bool CSpell::canBeCastAt(const CBattleInfoCallback * cb,  spells::Mode mode, const spells::Caster * caster, BattleHex destination) const
 {
 	if(canBeCast(cb, mode, caster))
-		return battleMechanics(cb, mode, caster)->canBeCastAt(destination);
+	{
+		spells::BattleCast event(cb, caster, mode, this);
+		return battleMechanics(&event)->canBeCastAt(destination);
+	}
 	else
+	{
 		return false;
+	}
 }
 
 int CSpell::adjustRawDamage(const spells::Caster * caster, const battle::Unit * affectedCreature, int rawDamage) const
@@ -488,9 +498,9 @@ void CSpell::setupMechanics()
 	adventureMechanics = IAdventureSpellMechanics::createMechanics(this);
 }
 
-std::unique_ptr<spells::Mechanics> CSpell::battleMechanics(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster) const
+std::unique_ptr<spells::Mechanics> CSpell::battleMechanics(const spells::IBattleCast * event) const
 {
-	return mechanics->create(cb, mode, caster);
+	return mechanics->create(event);
 }
 
 ///CSpell::AnimationInfo

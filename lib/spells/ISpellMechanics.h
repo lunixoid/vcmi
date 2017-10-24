@@ -58,14 +58,16 @@ public:
 	BattleHex hexValue;
 };
 
-///all parameters of particular cast event
-//TODO:
 class DLL_LINKAGE IBattleCast
 {
 public:
-	virtual ~IBattleCast();
+	virtual const CSpell * getSpell() const = 0;
+	virtual Mode getMode() const = 0;
+	virtual const Caster * getCaster() const = 0;
+	virtual const CBattleInfoCallback * getBattle() const = 0;
 };
 
+///all parameters of particular cast event
 class DLL_LINKAGE BattleCast : public IBattleCast
 {
 public:
@@ -76,6 +78,12 @@ public:
 	BattleCast(const BattleCast & orig, const Caster * caster_);
 
 	virtual ~BattleCast();
+
+	///IBattleCast
+	const CSpell * getSpell() const override;
+	Mode getMode() const override;
+	const Caster * getCaster() const override;
+	const CBattleInfoCallback * getBattle() const override;
 
 	void aimToHex(const BattleHex & destination);
 	void aimToStack(const CStack * destination);
@@ -99,12 +107,7 @@ public:
 
 	int getEffectValue() const;
 
-	const CSpell * spell;
-	const CBattleInfoCallback * cb;
-	const Caster * caster;
-
 	Target target;
-	Mode mode;
 
 	///spell school level
 	int spellLvl;
@@ -118,6 +121,11 @@ public:
 private:
 	///for Archangel-like casting
 	int effectValue;
+
+	Mode mode;
+	const CSpell * spell;
+	const CBattleInfoCallback * cb;
+	const Caster * caster;
 };
 
 class DLL_LINKAGE ISpellMechanicsFactory
@@ -125,7 +133,7 @@ class DLL_LINKAGE ISpellMechanicsFactory
 public:
 	virtual ~ISpellMechanicsFactory();
 
-	virtual std::unique_ptr<Mechanics> create(const CBattleInfoCallback * cb, Mode mode, const Caster * caster) const = 0;
+	virtual std::unique_ptr<Mechanics> create(const IBattleCast * event) const = 0;
 
 	static std::unique_ptr<ISpellMechanicsFactory> get(const CSpell * s);
 
@@ -140,7 +148,7 @@ class SpellCastContext;
 class DLL_LINKAGE Mechanics
 {
 public:
-	Mechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	Mechanics(const IBattleCast * event);
 	virtual ~Mechanics();
 
 	virtual bool adaptProblem(ESpellCastProblem::ESpellCastProblem source, Problem & target) const = 0;
@@ -188,7 +196,7 @@ class DLL_LINKAGE BaseMechanics : public Mechanics
 public:
 	std::shared_ptr<TargetCondition> targetCondition;
 
-	BaseMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	BaseMechanics(const IBattleCast * event);
 	virtual ~BaseMechanics();
 
 	bool adaptProblem(ESpellCastProblem::ESpellCastProblem source, Problem & target) const override;
@@ -203,6 +211,18 @@ public:
 	bool isMassive(const int level) const override;
 
 	bool ownerMatches(const battle::Unit * unit) const override;
+
+private:
+    int rangeLevel;
+
+	int effectLevel;
+	///actual spell-power affecting effect values
+	int effectPower;
+	///actual spell-power affecting effect duration
+	int effectDuration;
+
+	///for Archangel-like casting
+	int effectValue;
 };
 
 }// namespace spells

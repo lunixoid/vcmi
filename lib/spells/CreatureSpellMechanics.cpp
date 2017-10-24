@@ -19,8 +19,8 @@
 namespace spells
 {
 
-AcidBreathDamageMechanics::AcidBreathDamageMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_):
-	RegularSpellMechanics(s, Cb, caster_)
+AcidBreathDamageMechanics::AcidBreathDamageMechanics(const IBattleCast * event):
+	RegularSpellMechanics(event)
 {
 }
 
@@ -63,8 +63,8 @@ bool AcidBreathDamageMechanics::isImmuneByStack(const battle::Unit * obj) const
 }
 
 ///DeathStareMechanics
-DeathStareMechanics::DeathStareMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+DeathStareMechanics::DeathStareMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 
@@ -111,8 +111,8 @@ void DeathStareMechanics::applyBattleEffects(const SpellCastEnvironment * env, c
 }
 
 ///DispellHelpfulMechanics
-DispellHelpfulMechanics::DispellHelpfulMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: RegularSpellMechanics(s, Cb, caster_)
+DispellHelpfulMechanics::DispellHelpfulMechanics(const IBattleCast * event)
+	: RegularSpellMechanics(event)
 {
 }
 

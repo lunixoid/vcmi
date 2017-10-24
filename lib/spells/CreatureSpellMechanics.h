@@ -19,7 +19,7 @@ namespace spells
 class DLL_LINKAGE AcidBreathDamageMechanics : public RegularSpellMechanics
 {
 public:
-	AcidBreathDamageMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	AcidBreathDamageMechanics(const IBattleCast * event);
 	bool isImmuneByStack(const battle::Unit * obj) const override;
 protected:
 	void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const override;
@@ -28,7 +28,7 @@ protected:
 class DLL_LINKAGE DeathStareMechanics : public RegularSpellMechanics
 {
 public:
-	DeathStareMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	DeathStareMechanics(const IBattleCast * event);
 protected:
 	void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const override;
 };
@@ -36,7 +36,7 @@ protected:
 class DLL_LINKAGE DispellHelpfulMechanics : public RegularSpellMechanics
 {
 public:
-	DispellHelpfulMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_);
+	DispellHelpfulMechanics(const IBattleCast * event);
 	bool isImmuneByStack(const battle::Unit * obj) const override;
 protected:
 	void applyBattleEffects(const SpellCastEnvironment * env, const BattleCast & parameters, SpellCastContext & ctx) const override;

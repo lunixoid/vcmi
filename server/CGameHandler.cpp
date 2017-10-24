@@ -4501,7 +4501,6 @@ bool CGameHandler::makeCustomAction(BattleAction &ba)
 
 			spells::BattleCast parameters(gs->curB, h, spells::Mode::HERO, s);
 			parameters.aimToHex(ba.destinationTile);//todo: allow multiple destinations
-			parameters.mode = spells::Mode::HERO;
 			if (ba.selectedStack >= 0)
 				parameters.aimToStack(gs->curB->battleGetStackByID(ba.selectedStack, false));
 
@@ -4685,7 +4684,6 @@ void CGameHandler::stackTurnTrigger(const CStack *st)
 					return b==bonus.get();
 				});
 				spells::BattleCast parameters(gs->curB, st, spells::Mode::ENCHANTER, spell);
-				parameters.mode = spells::Mode::ENCHANTER;
 				parameters.spellLvl = bonus->val;
 				parameters.effectLevel = bonus->val;//todo: recheck
 				if(parameters.castIfPossible(spellEnv))

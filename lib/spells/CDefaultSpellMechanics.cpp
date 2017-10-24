@@ -128,7 +128,7 @@ SpellCastContext::SpellCastContext(const Mechanics * mechanics_, const SpellCast
 	sc.spellID = mechanics->getSpellId();
 	sc.skill = parameters.spellLvl;
 	sc.tile = parameters.getFirstDestinationHex();
-	sc.castByHero = parameters.mode == Mode::HERO;
+	sc.castByHero = mechanics->mode == Mode::HERO;
 	sc.casterStack = (mechanics->casterStack ? mechanics->casterStack->ID : -1);
 	sc.manaGained = 0;
 
@@ -138,12 +138,12 @@ SpellCastContext::SpellCastContext(const Mechanics * mechanics_, const SpellCast
 	if(mechanics->cb->battleHasHero(otherSide))
 		otherHero = mechanics->cb->battleGetFightingHero(otherSide);
 
-	logGlobal->debug("Started spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(parameters.mode));
+	logGlobal->debug("Started spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(mechanics->mode));
 }
 
 SpellCastContext::~SpellCastContext()
 {
-	logGlobal->debug("Finished spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(parameters.mode));
+	logGlobal->debug("Finished spell cast. Spell: %s; mode: %d", mechanics->getSpellName(), static_cast<int>(mechanics->mode));
 }
 
 void SpellCastContext::addDamageToDisplay(const si32 value)
@@ -196,9 +196,9 @@ void SpellCastContext::beforeCast()
 		}
 	}
 
-	sc.activeCast = parameters.mode == Mode::HERO ||
-		parameters.mode == Mode::CREATURE_ACTIVE ||
-		parameters.mode == Mode::ENCHANTER;
+	sc.activeCast = mechanics->mode == Mode::HERO ||
+		mechanics->mode == Mode::CREATURE_ACTIVE ||
+		mechanics->mode == Mode::ENCHANTER;
 }
 
 void SpellCastContext::cast()
@@ -236,8 +236,8 @@ void SpellCastContext::afterCast()
 }
 
 ///DefaultSpellMechanics
-DefaultSpellMechanics::DefaultSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: BaseMechanics(s, Cb, caster_)
+DefaultSpellMechanics::DefaultSpellMechanics(const IBattleCast * event)
+	: BaseMechanics(event)
 {
 };
 
@@ -647,8 +647,8 @@ bool DefaultSpellMechanics::requiresCreatureTarget() const
 }
 
 ///RegularSpellMechanics
-RegularSpellMechanics::RegularSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: DefaultSpellMechanics(s, Cb, caster_)
+RegularSpellMechanics::RegularSpellMechanics(const IBattleCast * event)
+	: DefaultSpellMechanics(event)
 {
 
 }
@@ -900,8 +900,8 @@ void RegularSpellMechanics::prepareBattleLog(SpellCastContext & ctx) const
 
 
 ///SpecialSpellMechanics
-SpecialSpellMechanics::SpecialSpellMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: DefaultSpellMechanics(s, Cb, caster_)
+SpecialSpellMechanics::SpecialSpellMechanics(const IBattleCast * event)
+	: DefaultSpellMechanics(event)
 {
 }
 

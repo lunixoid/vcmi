@@ -21,6 +21,7 @@
 namespace spells
 {
 	class ISpellMechanicsFactory;
+	class IBattleCast;
 }
 
 class CGObjectInstance;
@@ -389,7 +390,7 @@ public://internal, for use only by Mechanics classes
 	///returns raw damage or healed HP
 	int calculateRawEffectValue(int effectLevel, int basePowerMultiplier, int levelPowerMultiplier) const;
 
-	std::unique_ptr<spells::Mechanics> battleMechanics(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster) const;
+	std::unique_ptr<spells::Mechanics> battleMechanics(const spells::IBattleCast * event) const;
 private:
 	void setIsOffensive(const bool val);
 	void setIsRising(const bool val);

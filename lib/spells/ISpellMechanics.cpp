@@ -59,10 +59,9 @@ public:
 		targetCondition = makeCondition(s);
 	}
 
-	std::unique_ptr<Mechanics> create(const CBattleInfoCallback * cb, Mode mode, const Caster * caster) const override
+	std::unique_ptr<Mechanics> create(const IBattleCast * event) const override
 	{
-		T * ret = new T(spell, cb, caster);
-		ret->mode = mode;
+		T * ret = new T(event);
 		ret->targetCondition = targetCondition;
 		return std::unique_ptr<Mechanics>(ret);
 	}
@@ -73,10 +72,9 @@ private:
 class CustomMechanicsFactory : public ISpellMechanicsFactory
 {
 public:
-	std::unique_ptr<Mechanics> create(const CBattleInfoCallback * cb, Mode mode, const Caster * caster) const override
+	std::unique_ptr<Mechanics> create(const IBattleCast * event) const override
 	{
-		CustomSpellMechanics * ret = new CustomSpellMechanics(spell, cb, caster, effects);
-		ret->mode = mode;
+		CustomSpellMechanics * ret = new CustomSpellMechanics(event, effects);
 		ret->targetCondition = targetCondition;
 		return std::unique_ptr<Mechanics>(ret);
 	}
@@ -252,7 +250,6 @@ Destination & Destination::operator=(const Destination & other)
 	return *this;
 }
 
-IBattleCast::~IBattleCast() = default;
 
 BattleCast::BattleCast(const CBattleInfoCallback * cb, const Caster * caster_, const Mode mode_, const CSpell * spell_)
 	: spell(spell_),
@@ -266,7 +263,7 @@ BattleCast::BattleCast(const CBattleInfoCallback * cb, const Caster * caster_, c
 	effectValue(caster->getEffectValue(mode, spell))
 {
 	vstd::abetween(spellLvl, 0, 3);
-	vstd::abetween(effectLevel, 0, 3); //??? may be we can allow higher value here
+	vstd::abetween(effectLevel, 0, 3);
 
 	vstd::amax(effectPower, 0);
 	vstd::amax(effectDuration, 0);
@@ -288,6 +285,26 @@ BattleCast::BattleCast(const BattleCast & orig, const Caster * caster_)
 
 BattleCast::~BattleCast() = default;
 
+const CSpell * BattleCast::getSpell() const
+{
+	return spell;
+}
+
+Mode BattleCast::getMode() const
+{
+	return mode;
+}
+
+const Caster * BattleCast::getCaster() const
+{
+	return caster;
+}
+
+const CBattleInfoCallback * BattleCast::getBattle() const
+{
+	return cb;
+}
+
 void BattleCast::aimToHex(const BattleHex & destination)
 {
 	target.push_back(Destination(destination));
@@ -303,13 +320,13 @@ void BattleCast::aimToStack(const CStack * destination)
 
 void BattleCast::applyEffects(const SpellCastEnvironment * env) const
 {
-	auto m = spell->battleMechanics(cb, mode, caster);
+	auto m = spell->battleMechanics(this);
 	m->applyEffects(env, *this);
 }
 
 void BattleCast::applyEffectsForced(const SpellCastEnvironment * env) const
 {
-	auto m = spell->battleMechanics(cb, mode, caster);
+	auto m = spell->battleMechanics(this);
 	m->applyEffectsForced(env, *this);
 }
 
@@ -317,7 +334,7 @@ void BattleCast::cast(const SpellCastEnvironment * env)
 {
 	if(target.empty())
 		aimToHex(BattleHex::INVALID);
-	auto m = spell->battleMechanics(cb, mode, caster);
+	auto m = spell->battleMechanics(this);
 
 	std::vector <const CStack*> reflected;//for magic mirror
 
@@ -362,7 +379,7 @@ void BattleCast::cast(IBattleState * battleState)
 	//TODO: make equivalent to normal cast
 	if(target.empty())
 		aimToHex(BattleHex::INVALID);
-	auto m = spell->battleMechanics(cb, mode, caster);
+	auto m = spell->battleMechanics(this);
 
 	//TODO: reflection
 	//TODO: random effects evaluation
@@ -486,8 +503,11 @@ std::unique_ptr<ISpellMechanicsFactory> ISpellMechanicsFactory::get(const CSpell
 }
 
 ///Mechanics
-Mechanics::Mechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: owner(s), cb(Cb), caster(caster_)
+Mechanics::Mechanics(const IBattleCast * event)
+	: owner(event->getSpell()),
+	cb(event->getBattle()),
+	mode(event->getMode()),
+	caster(event->getCaster())
 {
 	casterStack = dynamic_cast<const CStack *>(caster);
 
@@ -513,9 +533,10 @@ bool Mechanics::counteringSelector(const Bonus * bonus) const
 	return false;
 }
 
-BaseMechanics::BaseMechanics(const CSpell * s, const CBattleInfoCallback * Cb, const Caster * caster_)
-	: Mechanics(s, Cb, caster_)
+BaseMechanics::BaseMechanics(const IBattleCast * event)
+	: Mechanics(event)
 {
+
 }
 
 BaseMechanics::~BaseMechanics() = default;
