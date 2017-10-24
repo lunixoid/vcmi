@@ -55,7 +55,7 @@ public:
 	void applyEffects(const SpellCastEnvironment * env, const BattleCast & parameters) const override;
 	void applyEffectsForced(const SpellCastEnvironment * env, const BattleCast & parameters) const override;
 
-	std::vector<BattleHex> rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool * outDroppedHexes = nullptr) const override;
+	std::vector<BattleHex> rangeInHexes(BattleHex centralHex, bool * outDroppedHexes = nullptr) const override;
 
 	bool canBeCast(Problem & problem) const override;
 	void cast(IBattleState * battleState, const BattleCast & parameters) const override;

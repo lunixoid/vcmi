@@ -82,7 +82,7 @@ bool StackEffect::eraseByImmunityFilter(const Mechanics * m, const battle::Unit 
 	return !isReceptive(m, s);
 }
 
-EffectTarget StackEffect::filterTarget(const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+EffectTarget StackEffect::filterTarget(const Mechanics * m, const EffectTarget & target) const
 {
 	EffectTarget res;
 	vstd::copy_if(target, std::back_inserter(res), [this, m](const Destination & d)

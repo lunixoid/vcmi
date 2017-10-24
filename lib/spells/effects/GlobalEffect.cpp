@@ -26,7 +26,7 @@ GlobalEffect::GlobalEffect(const int level)
 
 GlobalEffect::~GlobalEffect() = default;
 
-EffectTarget GlobalEffect::filterTarget(const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+EffectTarget GlobalEffect::filterTarget(const Mechanics * m, const EffectTarget & target) const
 {
 	EffectTarget res;
 	vstd::copy_if(target, std::back_inserter(res), [](const Destination & d)

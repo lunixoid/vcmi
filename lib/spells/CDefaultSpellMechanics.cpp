@@ -415,12 +415,12 @@ void DefaultSpellMechanics::defaultTimedEffect(const SpellCastEnvironment * env,
 	}
 }
 
-std::vector<BattleHex> DefaultSpellMechanics::rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool * outDroppedHexes) const
+std::vector<BattleHex> DefaultSpellMechanics::rangeInHexes(BattleHex centralHex, bool * outDroppedHexes) const
 {
 	using namespace SRSLPraserHelpers;
 
 	std::vector<BattleHex> ret;
-	std::string rng = owner->getLevelInfo(schoolLvl).range + ','; //copy + artificial comma for easier handling
+	std::string rng = owner->getLevelInfo(getRangeLevel()).range + ','; //copy + artificial comma for easier handling
 
 	if(rng.size() >= 2 && rng[0] != 'X') //there is at least one hex in range (+artificial comma)
 	{
@@ -677,7 +677,7 @@ std::vector<const CStack *> RegularSpellMechanics::calculateAffectedStacks(Battl
 {
 	std::set<const CStack *> attackedCres;//std::set to exclude multiple occurrences of two hex creatures
 	CSpell::TargetInfo ti(owner, getRangeLevel(), mode);
-	auto attackedHexes = rangeInHexes(destination, getRangeLevel());
+	auto attackedHexes = rangeInHexes(destination);
 
 	//hackfix for banned creature massive spells
 	if(!ti.massive && owner->getLevelInfo(getRangeLevel()).range == "X")

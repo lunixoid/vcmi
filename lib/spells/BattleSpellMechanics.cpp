@@ -428,11 +428,10 @@ ObstacleMechanics::ObstacleMechanics(const IBattleCast * event)
 
 bool ObstacleMechanics::canBeCastAt(BattleHex destination) const
 {
-	const auto level = caster->getSpellSchoolLevel(mode, owner);
 	bool hexesOutsideBattlefield = false;
 
-	auto tilesThatMustBeClear = rangeInHexes(destination, level, &hexesOutsideBattlefield);
-	const CSpell::TargetInfo ti(owner, level, mode);
+	auto tilesThatMustBeClear = rangeInHexes(destination, &hexesOutsideBattlefield);
+	const CSpell::TargetInfo ti(owner, getRangeLevel(), mode);
 	for(const BattleHex & hex : tilesThatMustBeClear)
 		if(!isHexAviable(cb, hex, ti.clearAffected))
 			return false;
@@ -596,7 +595,7 @@ WallMechanics::WallMechanics(const IBattleCast * event)
 {
 }
 
-std::vector<BattleHex> WallMechanics::rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool * outDroppedHexes) const
+std::vector<BattleHex> WallMechanics::rangeInHexes(BattleHex centralHex, bool * outDroppedHexes) const
 {
 	std::vector<BattleHex> ret;
 
@@ -626,7 +625,7 @@ std::vector<BattleHex> WallMechanics::rangeInHexes(BattleHex centralHex, ui8 sch
 
 	ret.push_back(centralHex);
 	addIfValid(centralHex.moveInDirection(firstStep, false));
-	if(schoolLvl >= 2) //advanced versions of fire wall / force field cotnains of 3 hexes
+	if(getRangeLevel() >= 2) //advanced versions of fire wall / force field cotnains of 3 hexes
 		addIfValid(centralHex.moveInDirection(secondStep, false)); //moveInDir function modifies subject hex
 
 	return ret;
@@ -653,7 +652,7 @@ void FireWallMechanics::applyBattleEffects(const SpellCastEnvironment * env, con
 		return;
 	}
 	//firewall is build from multiple obstacles - one fire piece for each affected hex
-	auto affectedHexes = rangeInHexes(destination, getRangeLevel());
+	auto affectedHexes = rangeInHexes(destination);
 	for(BattleHex hex : affectedHexes)
 		placeObstacle(env, parameters, hex);
 }
@@ -693,7 +692,7 @@ void ForceFieldMechanics::setupObstacle(SpellCreatedObstacle * obstacle) const
 	obstacle->obstacleType = CObstacleInstance::FORCE_FIELD;
 	obstacle->turnsRemaining = 2;
 	obstacle->visibleForAnotherSide = true;
-	obstacle->customSize = rangeInHexes(obstacle->pos, obstacle->spellLevel);
+	obstacle->customSize = rangeInHexes(obstacle->pos);
 }
 
 ///RemoveObstacleMechanics

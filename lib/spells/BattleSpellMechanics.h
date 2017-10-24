@@ -130,7 +130,7 @@ class DLL_LINKAGE WallMechanics : public ObstacleMechanics
 {
 public:
 	WallMechanics(const IBattleCast * event);
-	std::vector<BattleHex> rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool *outDroppedHexes = nullptr) const override;
+	std::vector<BattleHex> rangeInHexes(BattleHex centralHex, bool *outDroppedHexes = nullptr) const override;
 };
 
 class DLL_LINKAGE FireWallMechanics : public WallMechanics

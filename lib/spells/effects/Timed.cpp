@@ -67,19 +67,19 @@ void Timed::convertBonus(const Mechanics * m, int32_t & duration, std::vector<Bo
 	duration = maxDuration;
 }
 
-void Timed::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Timed::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 	SetStackEffect sse;
-	prepareEffects(sse, m, p, target);
+	prepareEffects(sse, m, target);
 
 	if(!(sse.toAdd.empty() && sse.toUpdate.empty()))
 		server->sendAndApply(&sse);
 }
 
-void Timed::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Timed::apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const
 {
 	SetStackEffect sse;
-	prepareEffects(sse, m, p, target);
+	prepareEffects(sse, m, target);
 
 	for(const auto & stackData : sse.toRemove)
 		battleState->removeUnitBonus(stackData.first, stackData.second);
@@ -91,7 +91,7 @@ void Timed::apply(IBattleState * battleState, const Mechanics * m, const BattleC
 		battleState->addUnitBonus(stackData.first, stackData.second);
 }
 
-void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Timed::prepareEffects(SetStackEffect & sse, const Mechanics * m, const EffectTarget & target) const
 {
 //get default spell duration (spell power with bonuses for heroes)
 	int32_t duration = m->getEffectDuration();

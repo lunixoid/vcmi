@@ -203,9 +203,8 @@ bool CSpell::canBeCast(spells::Problem & problem, const CBattleInfoCallback * cb
 
 std::vector<BattleHex> CSpell::rangeInHexes(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster, BattleHex centralHex) const
 {
-	auto schoolLevel = caster->getSpellSchoolLevel(mode, this);//TODO: remove
 	spells::BattleCast event(cb, caster, mode, this);
-	return battleMechanics(&event)->rangeInHexes(centralHex, schoolLevel);
+	return battleMechanics(&event)->rangeInHexes(centralHex);
 }
 
 std::vector<const CStack *> CSpell::getAffectedStacks(const CBattleInfoCallback * cb, spells::Mode mode, const spells::Caster * caster, int spellLvl, BattleHex destination) const

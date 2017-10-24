@@ -24,8 +24,8 @@ public:
 	Damage(const int level);
 	virtual ~Damage();
 
-	void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const override;
-	void apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const override;
+	void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const override;
+	void apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const override;
 
 protected:
 	void serializeJsonEffect(JsonSerializeFormat & handler) override final;

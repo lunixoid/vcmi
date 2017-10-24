@@ -34,7 +34,7 @@ Damage::Damage(const int level)
 
 Damage::~Damage() = default;
 
-void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 	StacksInjured stacksInjured;
 	int64_t damageToDisplay = 0;
@@ -103,7 +103,7 @@ void Damage::apply(const PacketSender * server, RNG & rng, const Mechanics * m, 
 	}
 }
 
-void Damage::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Damage::apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const
 {
 	const auto rawDamage = m->getEffectValue();
 

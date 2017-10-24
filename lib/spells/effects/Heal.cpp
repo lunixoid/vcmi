@@ -40,12 +40,12 @@ Heal::Heal(const int level)
 
 Heal::~Heal() = default;
 
-void Heal::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Heal::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 
 }
 
-void Heal::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Heal::apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const
 {
 
 }

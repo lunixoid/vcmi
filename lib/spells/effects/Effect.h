@@ -54,10 +54,10 @@ public:
 	virtual bool applicable(Problem & problem, const Mechanics * m) const;
 	virtual bool applicable(Problem & problem, const Mechanics * m, const Target & aimPoint, const EffectTarget & target) const;
 
-	virtual void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const = 0;
-	virtual void apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const;
+	virtual void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const = 0;
+	virtual void apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const;
 
-	virtual EffectTarget filterTarget(const Mechanics * m, const BattleCast & p, const EffectTarget & target) const = 0;
+	virtual EffectTarget filterTarget(const Mechanics * m, const EffectTarget & target) const = 0;
 
 	virtual EffectTarget transformTarget(const Mechanics * m, const Target & aimPoint, const Target & spellTarget) const = 0;
 

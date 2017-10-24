@@ -23,7 +23,7 @@ public:
 	Clone(const int level);
 	virtual ~Clone();
 
-	void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const override;
+	void apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const override;
 protected:
 	bool isReceptive(const Mechanics * m, const battle::Unit * s) const override;
 	bool isValidTarget(const Mechanics * m, const battle::Unit * s) const override;

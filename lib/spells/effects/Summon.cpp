@@ -93,7 +93,7 @@ bool Summon::applicable(Problem & problem, const Mechanics * m) const
 	return true;
 }
 
-void Summon::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Summon::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 	//new feature - percentage bonus
 	auto amount = m->owner->calculateRawEffectValue(m->getEffectLevel(), 0, m->caster->getSpecificSpellBonus(m->owner, m->getEffectPower()));

@@ -184,7 +184,7 @@ public:
 	virtual bool adaptProblem(ESpellCastProblem::ESpellCastProblem source, Problem & target) const = 0;
 	virtual bool adaptGenericProblem(Problem & target) const = 0;
 
-	virtual std::vector<BattleHex> rangeInHexes(BattleHex centralHex, ui8 schoolLvl, bool * outDroppedHexes = nullptr) const = 0;
+	virtual std::vector<BattleHex> rangeInHexes(BattleHex centralHex, bool * outDroppedHexes = nullptr) const = 0;
 	virtual std::vector<const CStack *> getAffectedStacks(BattleHex destination) const = 0;
 
 	virtual bool canBeCast(Problem & problem) const = 0;

@@ -34,7 +34,7 @@ Clone::Clone(const int level)
 
 Clone::~Clone() = default;
 
-void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Clone::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 	for(const Destination & dest : target)
 	{

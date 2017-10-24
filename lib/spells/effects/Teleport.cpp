@@ -45,7 +45,7 @@ bool Teleport::applicable(Problem & problem, const Mechanics * m) const
 	return StackEffect::applicable(problem, m);
 }
 
-void Teleport::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Teleport::apply(const PacketSender * server, RNG & rng, const Mechanics * m, const EffectTarget & target) const
 {
 	if(target.size() == 2)
 	{
@@ -87,7 +87,7 @@ void Teleport::apply(const PacketSender * server, RNG & rng, const Mechanics * m
 	}
 }
 
-void Teleport::apply(IBattleState * battleState, const Mechanics * m, const BattleCast & p, const EffectTarget & target) const
+void Teleport::apply(IBattleState * battleState, const Mechanics * m, const EffectTarget & target) const
 {
 	//TODO: teleport effect evaluation
 }
@@ -97,7 +97,7 @@ void Teleport::serializeJsonEffect(JsonSerializeFormat & handler)
 	//TODO: teleport options
 }
 
-EffectTarget Teleport::transformTarget(const Mechanics * m,  const Target & aimPoint, const Target & spellTarget) const
+EffectTarget Teleport::transformTarget(const Mechanics * m, const Target & aimPoint, const Target & spellTarget) const
 {
 	return aimPoint;
 }

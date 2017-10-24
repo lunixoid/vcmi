@@ -31,7 +31,7 @@ void Effects::add(std::shared_ptr<Effect> effect, const int level)
 	data.at(level).push_back(effect);
 }
 
-bool Effects::applicable(Problem & problem, const Mechanics * m, const int level) const
+bool Effects::applicable(Problem & problem, const Mechanics * m) const
 {
 	//stop on first problem
 	//require all not optional effects to be applicable
@@ -52,12 +52,12 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 		}
 	};
 
-	forEachEffect(level, callback);
+	forEachEffect(m->getEffectLevel(), callback);
 
 	return res && res2;
 }
 
-bool Effects::applicable(Problem & problem, const Mechanics * m, const int level, const Target & aimPoint, const Target & spellTarget) const
+bool Effects::applicable(Problem & problem, const Mechanics * m, const Target & aimPoint, const Target & spellTarget) const
 {
 	//stop on first problem
 	//require all not optional effects to be applicable
@@ -79,7 +79,7 @@ bool Effects::applicable(Problem & problem, const Mechanics * m, const int level
 		}
 	};
 
-	forEachEffect(level, callback);
+	forEachEffect(m->getEffectLevel(), callback);
 
 	return res && res2;
 }
@@ -95,7 +95,7 @@ void Effects::forEachEffect(const int level, const std::function<void(const Effe
 	}
 }
 
-Effects::EffectsToApply Effects::prepare(const Mechanics * m, const BattleCast & p, const Target & spellTarget) const
+Effects::EffectsToApply Effects::prepare(const Mechanics * m, const Target & aimPoint, const Target & spellTarget) const
 {
 	EffectsToApply effectsToApply;
 
@@ -103,7 +103,7 @@ Effects::EffectsToApply Effects::prepare(const Mechanics * m, const BattleCast &
 	{
 		if(e->automatic)
 		{
-			EffectTarget target = e->transformTarget(m, p.target, spellTarget);
+			EffectTarget target = e->transformTarget(m, aimPoint, spellTarget);
 			effectsToApply.push_back(std::make_pair(e, target));
 		}
 	};
